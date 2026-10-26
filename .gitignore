@@ -1,0 +1,32 @@
+# Variables de entorno (solo se versionan los .env.example)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+logs/
+*.log
+
+# Editores y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Despliegue
+.vercel/
+
+# Claude Code (configuración personal)
+.claude/settings.local.json
