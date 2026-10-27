@@ -78,14 +78,14 @@ class RepositorioTalleresFalso:
         en_estado.sort(key=lambda t: t["fecha_solicitud"], reverse=True)
         return [{**t, "responsable": self.usuarios._por_id(t["usuario_id"])} for t in en_estado]
 
-    async def resolver_pendiente(self, taller_id, estado, administrador_id, fecha, motivo_rechazo=None) -> bool:
+    async def resolver_pendiente(self, taller_id, estado, fecha, aprobado_por=None, motivo_rechazo=None) -> bool:
         taller = await self.buscar(taller_id)
         if taller is None or taller["estado_solicitud"] != "pendiente":
             return False
         taller.update(
             estado_solicitud=estado.value,
             motivo_rechazo=motivo_rechazo,
-            aprobado_por=administrador_id,
+            aprobado_por=aprobado_por,
             fecha_resolucion=fecha,
         )
         return True

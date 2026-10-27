@@ -50,8 +50,8 @@ class RepositorioTalleres:
         self,
         taller_id: ObjectId,
         estado: EstadoSolicitud,
-        administrador_id: ObjectId,
         fecha: datetime,
+        aprobado_por: ObjectId | None = None,
         motivo_rechazo: str | None = None,
     ) -> bool:
         """Aprueba o rechaza la solicitud solo si sigue pendiente. Devuelve False si no lo estaba."""
@@ -60,7 +60,7 @@ class RepositorioTalleres:
             {"$set": {
                 "estado_solicitud": estado.value,
                 "motivo_rechazo": motivo_rechazo,
-                "aprobado_por": administrador_id,
+                "aprobado_por": aprobado_por,
                 "fecha_resolucion": fecha,
             }},
         )

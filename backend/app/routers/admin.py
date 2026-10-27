@@ -40,7 +40,7 @@ async def rechazar(
 ) -> None:
     """Rechaza la solicitud. El motivo es obligatorio y se le muestra al taller al iniciar sesión."""
     try:
-        await servicio_admin.rechazar(solicitud_id, datos.motivo, administrador.id, talleres)
+        await servicio_admin.rechazar(solicitud_id, datos.motivo, talleres)
     except (servicio_admin.SolicitudNoEncontrada, servicio_admin.SolicitudYaResuelta) as error:
         raise _a_http(error)
 

@@ -108,6 +108,8 @@ def test_rechazar_guarda_el_motivo_y_el_taller_lo_ve_al_ingresar(cliente, taller
     assert respuesta.status_code == 204
     assert talleres.talleres[0]["estado_solicitud"] == "rechazado"
     assert talleres.talleres[0]["motivo_rechazo"] == "La razón social no coincide con ARCA."
+    assert talleres.talleres[0]["fecha_resolucion"] is not None
+    assert talleres.talleres[0]["aprobado_por"] is None, "el rechazo no registra qué administrador lo hizo"
     login = _login(cliente, 1)
     assert login.status_code == 403
     assert login.json()["detail"].endswith("Motivo: La razón social no coincide con ARCA.")
