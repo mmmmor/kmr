@@ -114,6 +114,61 @@ class RepositorioVehiculosFalso:
         return sorted(propios, key=lambda v: v["fecha_vinculacion"])
 
 
+class RepositorioCodigosFalso:
+    def __init__(self):
+        self.codigos: list[dict] = []
+        self.talleres: RepositorioTalleresFalso | None = None  # para la razón social del taller
+
+    async def insertar(self, codigo: dict, sesion=None) -> ObjectId:
+        codigo = {"_id": ObjectId(), **codigo}
+        self.codigos.append(codigo)
+        return codigo["_id"]
+
+    async def invalidar_vigentes(self, vehiculo_id, ahora, sesion=None) -> None:
+        for codigo in self.codigos:
+            if self._en_uso(codigo, vehiculo_id, ahora):
+                codigo["estado"] = "invalidado"
+
+    async def buscar_vigente(self, vehiculo_id, ahora) -> dict | None:
+        en_uso = [c for c in self.codigos if self._en_uso(c, vehiculo_id, ahora)]
+        return max(en_uso, key=lambda c: c["fecha_generacion"], default=None)
+
+    async def listar_por_vehiculo(self, vehiculo_id) -> list[dict]:
+        propios = [c for c in self.codigos if c["vehiculo_id"] == vehiculo_id]
+        propios.sort(key=lambda c: c["fecha_generacion"], reverse=True)
+        return [{**c, "taller": self._razon_social(c["taller_id"])} for c in propios]
+
+    async def registrar_intento_fallido(self, codigo_id, maximo: int) -> None:
+        codigo = self._por_id(codigo_id)
+        if codigo["estado"] == "vigente":
+            codigo["intentos_fallidos"] += 1
+            if codigo["intentos_fallidos"] > maximo:
+                codigo["estado"] = "invalidado"
+
+    async def marcar_utilizado(self, codigo_id, taller_id, ahora, sesion=None) -> bool:
+        codigo = self._por_id(codigo_id)
+        if codigo["estado"] != "vigente" or codigo["fecha_vencimiento"] <= ahora:
+            return False
+        codigo.update(estado="utilizado", taller_id=taller_id, fecha_uso=ahora)
+        return True
+
+    @staticmethod
+    def _en_uso(codigo, vehiculo_id, ahora) -> bool:
+        return (
+            codigo["vehiculo_id"] == vehiculo_id
+            and codigo["estado"] == "vigente"
+            and codigo["fecha_vencimiento"] > ahora
+        )
+
+    def _por_id(self, codigo_id) -> dict:
+        return next(c for c in self.codigos if c["_id"] == codigo_id)
+
+    def _razon_social(self, taller_id) -> str | None:
+        if taller_id is None or self.talleres is None:
+            return None
+        return next(t["razon_social"] for t in self.talleres.talleres if t["_id"] == taller_id)
+
+
 class TransaccionFalsa:
     """Imita a `en_transaccion`: si la función falla, deshace lo que escribió en los repositorios."""
 

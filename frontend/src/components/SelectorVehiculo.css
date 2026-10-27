@@ -1,0 +1,68 @@
+.selector-vehiculo {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.selector-vehiculo-etiqueta {
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.selector-vehiculo-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 14px;
+}
+
+.selector-vehiculo-opcion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.selector-vehiculo-opcion:hover {
+  border-color: var(--color-primario);
+}
+
+.selector-vehiculo-opcion.activa {
+  padding: 15px 19px;
+  background: var(--color-primario-suave);
+  border: 2px solid var(--color-primario);
+}
+
+/* El radio queda accesible con el teclado; el foco se marca en la tarjeta. */
+.selector-vehiculo-opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.selector-vehiculo-opcion:has(input:focus-visible) {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+.selector-vehiculo-texto strong,
+.selector-vehiculo-texto span {
+  display: block;
+}
+
+.selector-vehiculo-texto strong {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.selector-vehiculo-texto span {
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}

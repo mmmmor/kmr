@@ -178,6 +178,11 @@
   background: var(--color-fondo);
 }
 
+.boton-secundario:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .boton-texto {
   display: inline-flex;
   align-items: center;

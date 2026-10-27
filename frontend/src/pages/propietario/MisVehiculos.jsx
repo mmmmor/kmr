@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { CircleAlert, CircleCheck, Plus } from 'lucide-react'
+import { CircleAlert, CircleCheck, KeyRound, Plus } from 'lucide-react'
+import { Link } from 'react-router'
 import { listarVehiculos } from '../../api/vehiculos.js'
 import LayoutPanel from '../../components/LayoutPanel.jsx'
 import PanelDeslizable from '../../components/PanelDeslizable.jsx'
@@ -23,6 +24,12 @@ function TarjetaVehiculo({ vehiculo }) {
         </div>
       </div>
       <p className="vehiculo-sin-registros">Todavía no hay intervenciones registradas.</p>
+      <div className="vehiculo-acciones">
+        <Link className="boton-secundario" to={`/propietario/codigo?vehiculo=${vehiculo.id}`}>
+          <KeyRound size={18} aria-hidden="true" />
+          Generar código
+        </Link>
+      </div>
     </article>
   )
 }

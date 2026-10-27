@@ -22,6 +22,7 @@ async def crear_indices(db: AsyncDatabase) -> None:
     await db["talleres"].create_index("cuit", unique=True)
     await db["vehiculos"].create_index("dominio", unique=True)
     await db["vehiculos"].create_index("propietario_id")
+    await db["codigos_autorizacion"].create_index([("vehiculo_id", 1), ("estado", 1)])
 
 
 async def en_transaccion(funcion):

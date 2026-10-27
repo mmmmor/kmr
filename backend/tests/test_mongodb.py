@@ -1,13 +1,19 @@
 """Tests contra un MongoDB real. Solo corren si está definida MONGODB_URI_TEST (en CI, el service del workflow)."""
 
+import asyncio
 import os
 
 import pytest
+from bson import ObjectId
 from fastapi.testclient import TestClient
-from pymongo import MongoClient
+from pymongo import AsyncMongoClient, MongoClient
 
 from app.core.config import obtener_settings
+from app.core.seguridad import crear_token
 from app.main import app
+from app.modelos.usuario import Rol
+from app.repositorios.codigos import RepositorioCodigos
+from app.servicios import codigos as servicio_codigos
 
 URI_TEST = os.environ.get("MONGODB_URI_TEST")
 BASE_TEST = "kmr_test"
@@ -15,6 +21,26 @@ BASE_TEST = "kmr_test"
 pytestmark = pytest.mark.skipif(
     not URI_TEST, reason="sin MONGODB_URI_TEST: se omiten los tests contra MongoDB"
 )
+
+
+def _con_codigos(funcion):
+    """Corre `funcion(repositorio)` sobre la base de test, con un cliente async propio de este hilo."""
+
+    async def correr():
+        cliente = AsyncMongoClient(URI_TEST, tz_aware=True)
+        try:
+            return await funcion(RepositorioCodigos(cliente[BASE_TEST]))
+        finally:
+            await cliente.close()
+
+    return asyncio.run(correr())
+
+
+def _propietario_con_vehiculo(cliente):
+    propietario = {"Authorization": f"Bearer {crear_token(str(ObjectId()), Rol.PROPIETARIO)}"}
+    datos = {"dominio": "AE123CD", "marca": "Volkswagen", "modelo": "Gol Trend", "anio": 2020}
+    vehiculo = cliente.post("/api/vehiculos", json=datos, headers=propietario).json()
+    return propietario, vehiculo
 
 
 @pytest.fixture
@@ -93,12 +119,7 @@ def test_solicitud_de_taller_con_cuit_repetido_revierte_la_transaccion(cliente_c
 
 
 def test_admin_lista_con_responsable_y_aprueba_con_mongodb_real(cliente_con_base):
-    from bson import ObjectId
-
-    from app.core.seguridad import crear_token
-    from app.modelos.usuario import Rol
-
-    admin = {"Authorization": f"Bearer {crear_token(str(ObjectId()), Rol.ADMINISTRADOR)}"}
+    admin ={"Authorization": f"Bearer {crear_token(str(ObjectId()), Rol.ADMINISTRADOR)}"}
     datos = {
         "nombre": "Diego", "apellido": "Paz", "correo": "taller@correo.com", "contrasena": "Clave1234",
         "razon_social": "Taller Los Álamos", "cuit": "30715892347",
@@ -119,12 +140,7 @@ def test_admin_lista_con_responsable_y_aprueba_con_mongodb_real(cliente_con_base
 
 
 def test_el_indice_unico_impide_vincular_un_dominio_a_dos_propietarios(cliente_con_base):
-    from bson import ObjectId
-
-    from app.core.seguridad import crear_token
-    from app.modelos.usuario import Rol
-
-    uno, otro = (
+    uno, otro =(
         {"Authorization": f"Bearer {crear_token(str(ObjectId()), Rol.PROPIETARIO)}"} for _ in range(2)
     )
     datos = {"dominio": "AE123CD", "marca": "Volkswagen", "modelo": "Gol Trend", "anio": 2020}
@@ -137,6 +153,65 @@ def test_el_indice_unico_impide_vincular_un_dominio_a_dos_propietarios(cliente_c
     assert repetido.json()["detail"] == "Ese vehículo se encuentra vinculado a otro propietario."
     assert [v["dominio"] for v in cliente_con_base.get("/api/vehiculos", headers=uno).json()] == ["AE123CD"]
     assert cliente_con_base.get("/api/vehiculos", headers=otro).json() == []
+
+
+def test_generar_codigo_invalida_el_anterior_en_una_transaccion(cliente_con_base):
+    propietario, vehiculo = _propietario_con_vehiculo(cliente_con_base)
+    ruta = f"/api/vehiculos/{vehiculo['id']}/codigos"
+
+    primero = cliente_con_base.post(ruta, headers=propietario).json()
+    segundo = cliente_con_base.post(ruta, headers=propietario).json()
+    listado = cliente_con_base.get(ruta, headers=propietario).json()
+
+    assert listado["vigente"]["id"] == segundo["id"]
+    assert [(c["id"], c["estado"]) for c in listado["anteriores"]] == [(primero["id"], "invalidado")]
+
+
+def test_uso_unico_del_codigo_con_mongodb_real(cliente_con_base):
+    propietario, vehiculo = _propietario_con_vehiculo(cliente_con_base)
+    ruta = f"/api/vehiculos/{vehiculo['id']}/codigos"
+    codigo = cliente_con_base.post(ruta, headers=propietario).json()["codigo"]
+    taller_id = ObjectId()
+    with MongoClient(URI_TEST) as cliente_sync:
+        cliente_sync[BASE_TEST]["talleres"].insert_one({"_id": taller_id, "razon_social": "Lubricentro San Martín"})
+
+    async def usar_dos_veces(codigos):
+        vigente = await servicio_codigos.validar(ObjectId(vehiculo["id"]), codigo, codigos)
+        await servicio_codigos.consumir(vigente, taller_id, codigos)
+        with pytest.raises(servicio_codigos.CodigoInvalido):
+            await servicio_codigos.consumir(vigente, taller_id, codigos)
+        with pytest.raises(servicio_codigos.CodigoInvalido):
+            await servicio_codigos.validar(ObjectId(vehiculo["id"]), codigo, codigos)
+
+    _con_codigos(usar_dos_veces)
+
+    usado = cliente_con_base.get(ruta, headers=propietario).json()["anteriores"][0]
+    assert usado["estado"] == "utilizado"
+    assert usado["taller"] == "Lubricentro San Martín"
+
+
+def test_el_sexto_intento_fallido_invalida_el_codigo_con_mongodb_real(cliente_con_base):
+    propietario, vehiculo = _propietario_con_vehiculo(cliente_con_base)
+    ruta = f"/api/vehiculos/{vehiculo['id']}/codigos"
+    codigo = cliente_con_base.post(ruta, headers=propietario).json()["codigo"]
+    incorrecto = f"{(int(codigo) + 1) % 10**6:06d}"
+
+    def fallar(veces):
+        async def intentar(codigos):
+            for _ in range(veces):
+                with pytest.raises(servicio_codigos.CodigoInvalido):
+                    await servicio_codigos.validar(ObjectId(vehiculo["id"]), incorrecto, codigos)
+
+        return intentar
+
+    _con_codigos(fallar(5))
+    con_cinco = cliente_con_base.get(ruta, headers=propietario).json()
+    _con_codigos(fallar(1))
+    con_seis = cliente_con_base.get(ruta, headers=propietario).json()
+
+    assert con_cinco["vigente"]["intentos_fallidos"] == 5
+    assert con_seis["vigente"] is None
+    assert (con_seis["anteriores"][0]["estado"], con_seis["anteriores"][0]["intentos_fallidos"]) == ("invalidado", 6)
 
 
 def test_mongodb_es_replica_set_y_admite_transacciones():
