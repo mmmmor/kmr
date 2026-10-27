@@ -8,6 +8,9 @@ MENSAJES = {
     "missing": "Completá este campo.",
     "string_too_short": "Completá este campo.",
     "string_type": "Ingresá un texto.",
+    "int_type": "Ingresá un número entero.",
+    "int_parsing": "Ingresá un número entero.",
+    "int_from_float": "Ingresá un número entero.",
 }
 
 
@@ -27,6 +30,9 @@ def _mensaje(error: dict) -> str:
         return str(error["ctx"]["error"])
     if tipo == "string_too_long":
         return f"Usá como máximo {error['ctx']['max_length']} caracteres."
+    # Un número o una fecha sin completar llegan como null o "": es un campo vacío, no un formato inválido.
+    if tipo.endswith(("_type", "_parsing")) and error.get("input") in (None, ""):
+        return MENSAJES["missing"]
     return MENSAJES.get(tipo, "El valor ingresado no es válido.")
 
 

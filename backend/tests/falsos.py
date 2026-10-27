@@ -8,6 +8,7 @@ from bson import ObjectId
 from app.core.seguridad import hashear_contrasena
 from app.repositorios.talleres import CuitYaRegistrado
 from app.repositorios.usuarios import CorreoYaRegistrado
+from app.repositorios.vehiculos import DominioYaVinculado
 
 
 class RepositorioUsuariosFalso:
@@ -89,6 +90,28 @@ class RepositorioTalleresFalso:
             fecha_resolucion=fecha,
         )
         return True
+
+
+class RepositorioVehiculosFalso:
+    def __init__(self):
+        self.vehiculos: list[dict] = []
+
+    async def insertar(self, vehiculo: dict) -> ObjectId:
+        if any(v["dominio"] == vehiculo["dominio"] for v in self.vehiculos):
+            raise DominioYaVinculado
+        vehiculo = {"_id": ObjectId(), **vehiculo}
+        self.vehiculos.append(vehiculo)
+        return vehiculo["_id"]
+
+    async def buscar(self, vehiculo_id) -> dict | None:
+        return next((v for v in self.vehiculos if v["_id"] == vehiculo_id), None)
+
+    async def buscar_por_dominio(self, dominio: str) -> dict | None:
+        return next((v for v in self.vehiculos if v["dominio"] == dominio), None)
+
+    async def listar_por_propietario(self, propietario_id) -> list[dict]:
+        propios = [v for v in self.vehiculos if v["propietario_id"] == propietario_id]
+        return sorted(propios, key=lambda v: v["fecha_vinculacion"])
 
 
 class TransaccionFalsa:

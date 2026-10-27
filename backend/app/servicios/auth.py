@@ -87,6 +87,7 @@ async def iniciar_sesion(
         token=crear_token(str(usuario["_id"]), rol),
         rol=rol,
         nombre=usuario["nombre"],
+        apellido=usuario["apellido"],
     )
 
 
