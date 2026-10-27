@@ -1,0 +1,79 @@
+.pasos {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-texto-suave);
+  font-weight: 500;
+}
+
+.paso:last-child {
+  flex: 0 0 auto;
+}
+
+/* Línea hacia el paso siguiente. */
+.paso:not(:last-child)::after {
+  content: '';
+  flex: 1;
+  min-width: 24px;
+  height: 2px;
+  margin-left: 4px;
+  background: var(--color-borde-fuerte);
+}
+
+.paso-completo:not(:last-child)::after {
+  background: var(--color-primario);
+}
+
+.paso-numero {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  font-size: 15px;
+  font-weight: 700;
+  background: var(--color-superficie);
+  border: 2px solid var(--color-borde-fuerte);
+  border-radius: 50%;
+}
+
+.paso-actual,
+.paso-completo {
+  color: var(--color-texto);
+}
+
+.paso-actual {
+  font-weight: 600;
+}
+
+.paso-actual .paso-numero,
+.paso-completo .paso-numero {
+  color: #fff;
+  background: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.paso-texto {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .paso:not(.paso-actual) .paso-texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}

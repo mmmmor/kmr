@@ -1,0 +1,232 @@
+.taller-grilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  gap: 32px;
+  align-items: start;
+}
+
+.tarjeta-taller {
+  padding: 32px 36px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+}
+
+/* --- Paso 1 --- */
+
+.campo input.campo-codigo {
+  padding: 16px;
+  font-family: var(--fuente-mono);
+  font-size: 30px;
+  letter-spacing: 0.5em;
+  /* Compensa el espacio que deja letter-spacing después del último dígito. */
+  text-indent: 0.5em;
+  text-align: center;
+}
+
+.campo input.campo-codigo::placeholder {
+  color: #d0d5cf;
+}
+
+.boton-primario.boton-con-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* --- Paso 2 --- */
+
+.vehiculo-autorizado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  margin-bottom: 24px;
+  padding: 20px 28px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+}
+
+.vehiculo-autorizado-datos {
+  flex: 1;
+  min-width: 220px;
+}
+
+.vehiculo-autorizado-datos strong {
+  display: block;
+  font-size: 18px;
+}
+
+.vehiculo-autorizado-datos > span {
+  color: var(--color-texto-suave);
+}
+
+.vehiculo-autorizado-datos .mono {
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.vehiculo-autorizado-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.vehiculo-autorizado-acciones .boton-texto {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.formulario-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.antes-de-registrar {
+  padding: 26px 28px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+}
+
+.antes-de-registrar h2 {
+  margin: 0 0 14px;
+  font-family: var(--fuente-titulos);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.antes-de-registrar ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--color-texto-suave);
+}
+
+.antes-de-registrar li + li {
+  margin-top: 10px;
+}
+
+.nota-movil {
+  display: none;
+}
+
+/* --- Paso 3 --- */
+
+.confirmacion {
+  max-width: 760px;
+}
+
+.confirmacion-icono {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+}
+
+.confirmacion h2 {
+  margin: 0 0 6px;
+  font-family: var(--fuente-titulos);
+  font-size: 26px;
+}
+
+.confirmacion > p {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.confirmacion-vehiculo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0 18px;
+  font-size: 18px;
+}
+
+.confirmacion-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px 24px;
+  margin: 0 0 22px;
+  padding: 20px 0;
+  border-top: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.confirmacion-datos dt {
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.confirmacion-datos dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.confirmacion .confirmacion-nota {
+  margin-bottom: 22px;
+  font-size: 15px;
+}
+
+.confirmacion-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 1100px) {
+  .taller-grilla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  /* En el celular el formulario va directo sobre el fondo, como en el mockup. */
+  .tarjeta-taller {
+    padding: 0;
+    background: none;
+    border: none;
+  }
+
+  .vehiculo-autorizado {
+    padding: 16px;
+  }
+
+  .vehiculo-autorizado-acciones {
+    align-items: flex-start;
+  }
+
+  .antes-de-registrar {
+    display: none;
+  }
+
+  .nota-movil {
+    display: block;
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--color-texto-suave);
+  }
+
+  /* El botón principal queda arriba. */
+  .formulario-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .confirmacion-acciones {
+    flex-direction: column;
+  }
+
+  .campo input.campo-codigo {
+    font-size: 26px;
+    letter-spacing: 0.4em;
+    text-indent: 0.4em;
+  }
+}

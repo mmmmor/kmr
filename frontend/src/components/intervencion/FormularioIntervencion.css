@@ -1,0 +1,231 @@
+.seccion-intervencion {
+  padding: 26px 0;
+  border-top: 1px solid var(--color-borde);
+}
+
+.seccion-intervencion:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.seccion-intervencion h2 {
+  margin: 0 0 18px;
+  font-family: var(--fuente-titulos);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.seccion-intervencion .seccion-ayuda {
+  margin: -12px 0 18px;
+  color: var(--color-texto-suave);
+}
+
+/* --- Ítems --- */
+
+.items-encabezado,
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px 40px;
+  gap: 10px;
+}
+
+.items-encabezado {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+.items-encabezado span:nth-child(2) {
+  text-align: center;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  align-items: start;
+}
+
+.item-campo input {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 10px;
+}
+
+.item-campo input:focus {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.item-campo.campo-invalido input {
+  border-color: var(--color-error);
+}
+
+.item-campo input.item-cantidad {
+  font-family: var(--fuente-mono);
+  text-align: center;
+}
+
+.item-quitar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 48px;
+  color: var(--color-texto-suave);
+  background: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.item-quitar:hover {
+  color: var(--color-error);
+  background: var(--color-error-suave);
+}
+
+.items-error {
+  margin: -8px 0 12px;
+}
+
+.boton-agregar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-primario);
+  background: none;
+  border: 1px dashed var(--color-borde-fuerte);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.boton-agregar:hover {
+  border-color: var(--color-primario);
+  background: var(--color-primario-suave);
+}
+
+/* --- Comprobante --- */
+
+.adjuntar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 26px 20px;
+  text-align: center;
+  background: #f8f9f6;
+  border: 1px dashed var(--color-borde-fuerte);
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.adjuntar:hover,
+.adjuntar-arrastrando {
+  border-color: var(--color-primario);
+  background: var(--color-primario-suave);
+}
+
+.adjuntar:has(input:focus-visible) {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+.adjuntar-invalido {
+  border-color: var(--color-error);
+}
+
+.adjuntar-icono {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+}
+
+.adjuntar strong {
+  font-size: 17px;
+  color: var(--color-primario);
+}
+
+.adjuntar span:last-child {
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.archivo-adjunto {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 14px 18px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+.archivo-adjunto > svg {
+  flex-shrink: 0;
+  color: var(--color-primario);
+}
+
+.archivo-adjunto div {
+  flex: 1;
+  min-width: 0;
+}
+
+.archivo-adjunto strong,
+.archivo-adjunto span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.archivo-adjunto span {
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.archivo-quitar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-texto-suave);
+  background: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.archivo-quitar:hover {
+  background: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+@media (max-width: 600px) {
+  .items-encabezado,
+  .item {
+    grid-template-columns: minmax(0, 1fr) 76px 36px;
+    gap: 8px;
+  }
+
+  .item-quitar {
+    width: 36px;
+  }
+}

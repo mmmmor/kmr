@@ -84,3 +84,38 @@
 .patente-anterior .patente-texto {
   padding-top: 0;
 }
+
+/* --- Vista previa de la patente mientras se escribe el dominio --- */
+
+.vista-patente {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 4px 0 24px;
+  padding: 30px 16px 24px;
+  background: var(--color-fondo);
+  border-radius: 16px;
+}
+
+.vista-patente p {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-primario);
+  text-align: center;
+}
+
+.vista-patente-vacia {
+  padding: 22px 16px;
+}
+
+.vista-patente-vacia p {
+  font-weight: 400;
+  color: var(--color-texto-suave);
+}
+
+@media (max-width: 600px) {
+  .vista-patente .patente-grande {
+    font-size: 44px;
+  }
+}
