@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from bson import ObjectId
+from bson.errors import InvalidId
 
 from app.esquemas.vehiculos import VehiculoEntrada, VehiculoSalida
 from app.repositorios.vehiculos import DominioYaVinculado, RepositorioVehiculos
@@ -12,6 +13,10 @@ class VehiculoDeOtroPropietario(Exception):
 
 class VehiculoYaVinculado(Exception):
     """El dominio ya está vinculado a la misma cuenta que lo intenta vincular."""
+
+
+class VehiculoNoEncontrado(Exception):
+    pass
 
 
 async def vincular(datos: VehiculoEntrada, propietario_id: str, vehiculos: RepositorioVehiculos) -> VehiculoSalida:
@@ -41,6 +46,21 @@ async def vincular(datos: VehiculoEntrada, propietario_id: str, vehiculos: Repos
 
 async def listar(propietario_id: str, vehiculos: RepositorioVehiculos) -> list[VehiculoSalida]:
     return [a_salida(v) for v in await vehiculos.listar_por_propietario(ObjectId(propietario_id))]
+
+
+async def obtener_propio(vehiculo_id: str, propietario_id: str, vehiculos: RepositorioVehiculos) -> dict:
+    """Devuelve el vehículo solo si pertenece al propietario.
+
+    Si no existe o es de otra cuenta lanza VehiculoNoEncontrado en los dos casos, para no
+    revelar qué vehículos tienen otros propietarios.
+    """
+    try:
+        vehiculo = await vehiculos.buscar(ObjectId(vehiculo_id))
+    except (InvalidId, TypeError):
+        raise VehiculoNoEncontrado
+    if vehiculo is None or vehiculo["propietario_id"] != ObjectId(propietario_id):
+        raise VehiculoNoEncontrado
+    return vehiculo
 
 
 def a_salida(vehiculo: dict) -> VehiculoSalida:

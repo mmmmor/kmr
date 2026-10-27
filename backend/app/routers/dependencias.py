@@ -7,6 +7,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 
 from app.core import db as conexion
 from app.core.db import obtener_db
+from app.repositorios.codigos import RepositorioCodigos
 from app.repositorios.talleres import RepositorioTalleres
 from app.repositorios.usuarios import RepositorioUsuarios
 from app.repositorios.vehiculos import RepositorioVehiculos
@@ -28,6 +29,12 @@ def obtener_repositorio_vehiculos(
     db: Annotated[AsyncDatabase, Depends(obtener_db)],
 ) -> RepositorioVehiculos:
     return RepositorioVehiculos(db)
+
+
+def obtener_repositorio_codigos(
+    db: Annotated[AsyncDatabase, Depends(obtener_db)],
+) -> RepositorioCodigos:
+    return RepositorioCodigos(db)
 
 
 def obtener_transaccion():
