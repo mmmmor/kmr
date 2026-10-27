@@ -19,24 +19,6 @@
   font-weight: 600;
 }
 
-.boton-secundario {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  font: inherit;
-  font-weight: 600;
-  color: var(--color-texto);
-  background: var(--color-superficie);
-  border: 1px solid var(--color-borde-fuerte);
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.boton-secundario:hover {
-  background: var(--color-fondo);
-}
-
 @media (max-width: 600px) {
   .panel-provisorio-encabezado {
     padding: 12px 16px;

@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router'
 import RutaProtegida from './auth/RutaProtegida.jsx'
-import InicioAdmin from './pages/admin/Inicio.jsx'
+import Solicitudes from './pages/admin/Solicitudes.jsx'
 import InicioPropietario from './pages/propietario/Inicio.jsx'
 import Inicio from './pages/publico/Inicio.jsx'
 import Login from './pages/publico/Login.jsx'
@@ -23,7 +23,7 @@ function App() {
         <Route path="/taller" element={<InicioTaller />} />
       </Route>
       <Route element={<RutaProtegida rol="administrador" />}>
-        <Route path="/admin" element={<InicioAdmin />} />
+        <Route path="/admin" element={<Solicitudes />} />
       </Route>
     </Routes>
   )

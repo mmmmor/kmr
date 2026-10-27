@@ -1,4 +1,4 @@
-import { leerSesion } from '../auth/sesion.js'
+import { borrarSesion, leerSesion } from '../auth/sesion.js'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
@@ -26,6 +26,12 @@ export async function pedir(ruta, { metodo = 'GET', cuerpo } = {}) {
     })
   } catch {
     throw new ErrorApi('No pudimos conectarnos con el servidor. Probá de nuevo en unos minutos.', 0)
+  }
+
+  // Con la sesión vencida o inválida, se vuelve al login.
+  if (respuesta.status === 401 && token) {
+    borrarSesion()
+    window.location.assign('/login')
   }
 
   const datos = await respuesta.json().catch(() => null)

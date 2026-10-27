@@ -2,6 +2,7 @@ import { LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { useSesion } from '../auth/contexto.js'
 import Logo from './Logo.jsx'
+import './formulario.css'
 import './PanelProvisorio.css'
 
 // Vista provisoria de cada rol hasta que se implementen sus pantallas.
