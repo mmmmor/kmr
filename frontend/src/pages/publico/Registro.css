@@ -1,0 +1,73 @@
+.registro-beneficio {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.registro-beneficio-icono {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.registro-beneficio strong {
+  font-size: 17px;
+}
+
+.registro-beneficio p {
+  margin: 4px 0 0;
+  line-height: 1.6;
+}
+
+.registro-tipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.registro-tipo-opcion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 12px;
+}
+
+.registro-tipo-opcion.activa {
+  color: var(--color-primario);
+  background: var(--color-primario-suave);
+  border: 2px solid var(--color-primario);
+}
+
+.registro-tipo-opcion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.registro-tipo-nota {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--color-texto-suave);
+  text-align: right;
+}
+
+.registro-tipo + .registro-tipo-nota + .aviso {
+  margin-top: 16px;
+}
+
+/* En el celular los botones van sin ícono, como en el mockup, para que el texto entre en una línea. */
+@media (max-width: 600px) {
+  .registro-tipo-opcion svg {
+    display: none;
+  }
+}

@@ -1,0 +1,138 @@
+/* Estilos compartidos por los formularios. */
+
+.titulo-pagina {
+  margin: 0 0 8px;
+  font-family: var(--fuente-titulos);
+  font-size: 38px;
+  line-height: 1.15;
+}
+
+.subtitulo-pagina {
+  margin: 0 0 24px;
+  color: var(--color-texto-suave);
+}
+
+.seccion-formulario {
+  margin: 28px 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-texto-suave);
+}
+
+.fila-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.campo {
+  margin-bottom: 18px;
+}
+
+.campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.campo input {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 10px;
+}
+
+.campo input:focus {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.campo-invalido input {
+  border-color: var(--color-error);
+}
+
+.campo-ayuda,
+.campo-error {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--color-texto-suave);
+}
+
+.campo-error {
+  color: var(--color-error);
+}
+
+.aviso {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.aviso svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.aviso-exito {
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+}
+
+.aviso-error {
+  background: var(--color-error-suave);
+  color: var(--color-error);
+}
+
+.boton-primario {
+  width: 100%;
+  padding: 15px;
+  font: inherit;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primario);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.boton-primario:hover {
+  background: var(--color-primario-oscuro);
+}
+
+.boton-primario:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.pie-formulario {
+  margin: 20px 0 0;
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.pie-formulario a {
+  color: var(--color-primario);
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .titulo-pagina {
+    font-size: 30px;
+  }
+
+  .fila-campos {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

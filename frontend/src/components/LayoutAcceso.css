@@ -1,0 +1,88 @@
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(380px, 36%) 1fr;
+}
+
+.acceso-panel {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 54px;
+  background: var(--color-primario);
+  color: #fff;
+}
+
+.acceso-panel-contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.acceso-panel h2 {
+  margin: 0 0 32px;
+  font-family: var(--fuente-titulos);
+  font-size: 34px;
+  line-height: 1.2;
+}
+
+.acceso-panel p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.acceso-panel-pie {
+  margin: 0;
+  font-size: 14px;
+}
+
+.acceso-panel-pie a {
+  color: #fff;
+  font-weight: 600;
+}
+
+.acceso-encabezado {
+  display: none;
+}
+
+.acceso-principal {
+  display: flex;
+  justify-content: center;
+  padding: 48px 32px;
+}
+
+.acceso-formulario {
+  width: 100%;
+  max-width: 540px;
+}
+
+@media (max-width: 900px) {
+  .acceso {
+    display: block;
+  }
+
+  .acceso-panel {
+    display: none;
+  }
+
+  .acceso-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--color-superficie);
+    border-bottom: 1px solid var(--color-borde);
+  }
+
+  .acceso-encabezado a:not(.logo) {
+    color: var(--color-primario);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .acceso-principal {
+    padding: 28px 16px 40px;
+  }
+}

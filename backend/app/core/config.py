@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 RUTA_ENV = Path(__file__).resolve().parents[2] / ".env"
@@ -19,7 +20,8 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_uri_intervenciones: str | None = None
     mongodb_db: str = "kmr"
-    jwt_secret: str | None = None
+    # Obligatoria: sin clave no se pueden firmar sesiones. 32+ caracteres para HS256.
+    jwt_secret: str = Field(min_length=32)
     jwt_expira_minutos: int = 120
     frontend_url: str = "http://localhost:5173"
     brevo_api_key: str | None = None

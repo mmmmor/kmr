@@ -28,5 +28,8 @@ Thumbs.db
 # Despliegue
 .vercel/
 
+# Capturas y logs del navegador de pruebas (Playwright MCP)
+.playwright-mcp/
+
 # Claude Code (configuración personal)
 .claude/settings.local.json
