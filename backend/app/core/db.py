@@ -18,6 +18,7 @@ def conectar() -> None:
 async def crear_indices(db: AsyncDatabase) -> None:
     """Crea los índices del modelo de datos (si ya existen, no hace nada)."""
     await db["usuarios"].create_index("correo", unique=True)
+    await db["talleres"].create_index("usuario_id", unique=True)
 
 
 async def cerrar() -> None:

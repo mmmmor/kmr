@@ -4,21 +4,8 @@ import pytest
 
 from app.core.seguridad import verificar_contrasena
 from app.main import app
-from app.repositorios.usuarios import CorreoYaRegistrado
 from app.routers.auth import obtener_repositorio_usuarios
-
-
-class RepositorioUsuariosFalso:
-    """Imita al repositorio real, incluido el índice único sobre `correo`."""
-
-    def __init__(self):
-        self.usuarios: list[dict] = []
-
-    async def insertar(self, usuario: dict) -> str:
-        if any(u["correo"] == usuario["correo"] for u in self.usuarios):
-            raise CorreoYaRegistrado
-        self.usuarios.append(usuario)
-        return f"id{len(self.usuarios)}"
+from tests.falsos import RepositorioUsuariosFalso
 
 
 @pytest.fixture

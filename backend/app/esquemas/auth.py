@@ -32,6 +32,23 @@ class RegistroEntrada(BaseModel):
         return contrasena
 
 
+class LoginEntrada(BaseModel):
+    correo: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=254)]
+    # Sin política acá: solo se compara contra el hash guardado.
+    contrasena: Annotated[str, StringConstraints(min_length=1, max_length=256)]
+
+    @field_validator("correo")
+    @classmethod
+    def normalizar_correo(cls, correo: str) -> str:
+        return correo.lower()
+
+
+class SesionSalida(BaseModel):
+    token: str
+    rol: Rol
+    nombre: str
+
+
 class UsuarioSalida(BaseModel):
     id: str
     nombre: str
