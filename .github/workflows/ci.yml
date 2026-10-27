@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mongodb:
+        image: mongo:8.0
+        # Replica set de un nodo: las transacciones de la cadena de hash lo necesitan.
+        command: "--replSet rs0"
+        ports:
+          - 27017:27017
+        # El health check inicia el replica set la primera vez y recién da "healthy"
+        # cuando el nodo es primario; los steps no arrancan hasta ese momento.
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'try { rs.status() } catch (e) { rs.initiate() }; quit(db.hello().isWritablePrimary ? 0 : 1)'"
+          --health-interval 2s
+          --health-timeout 10s
+          --health-retries 30
+    env:
+      # Base local del service, sin credenciales.
+      MONGODB_URI_TEST: mongodb://localhost:27017/?directConnection=true
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Correr tests
+        run: pytest
+
+  frontend:
+    name: Frontend (build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build
+        run: npm run build
