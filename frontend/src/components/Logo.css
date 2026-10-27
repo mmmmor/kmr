@@ -1,0 +1,40 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.logo-icono {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--color-primario);
+  color: #fff;
+}
+
+.logo-texto {
+  font-family: var(--fuente-titulos);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.logo-r {
+  color: var(--color-primario);
+}
+
+.logo-invertido {
+  color: #fff;
+}
+
+.logo-invertido .logo-icono {
+  background: #fff;
+  color: var(--color-primario);
+}
+
+.logo-invertido .logo-r {
+  color: #a8d5b9;
+}
