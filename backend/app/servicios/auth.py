@@ -23,21 +23,25 @@ class ErrorLogin(Exception):
         self.mensaje = mensaje
 
 
-async def registrar_propietario(datos: RegistroEntrada, repo: RepositorioUsuarios) -> UsuarioSalida:
-    """Da de alta un propietario. Lanza CorreoYaRegistrado si el correo ya tiene cuenta."""
-    usuario = {
+def nuevo_usuario(datos: RegistroEntrada, rol: Rol) -> dict:
+    """Documento de `usuarios` listo para insertar, con la contraseña ya hasheada."""
+    return {
         "nombre": datos.nombre,
         "apellido": datos.apellido,
         "correo": datos.correo,
         "contrasena_hash": hashear_contrasena(datos.contrasena),
-        "rol": Rol.PROPIETARIO.value,
+        "rol": rol.value,
         "fecha_alta": datetime.now(UTC),
         "intentos_login_fallidos": 0,
         "bloqueado_hasta": None,
     }
-    usuario_id = await repo.insertar(usuario)
+
+
+async def registrar_propietario(datos: RegistroEntrada, repo: RepositorioUsuarios) -> UsuarioSalida:
+    """Da de alta un propietario. Lanza CorreoYaRegistrado si el correo ya tiene cuenta."""
+    usuario_id = await repo.insertar(nuevo_usuario(datos, Rol.PROPIETARIO))
     return UsuarioSalida(
-        id=usuario_id,
+        id=str(usuario_id),
         nombre=datos.nombre,
         apellido=datos.apellido,
         correo=datos.correo,

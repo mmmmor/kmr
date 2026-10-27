@@ -1,4 +1,4 @@
-"""Traduce los errores de validación de Pydantic al formato { "campos": { campo: mensaje } }."""
+"""Formato de errores de la API: { "detail": mensaje, "campos": { campo: mensaje } }."""
 
 from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
@@ -9,6 +9,16 @@ MENSAJES = {
     "string_too_short": "Completá este campo.",
     "string_type": "Ingresá un texto.",
 }
+
+
+class ErrorDeCampo(Exception):
+    """Error de negocio atribuible a un campo del formulario (por ejemplo, un correo ya registrado)."""
+
+    def __init__(self, status_code: int, campo: str, mensaje: str):
+        super().__init__(mensaje)
+        self.status_code = status_code
+        self.campo = campo
+        self.mensaje = mensaje
 
 
 def _mensaje(error: dict) -> str:
@@ -29,4 +39,11 @@ async def manejar_error_validacion(request: Request, exc: RequestValidationError
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={"detail": "Revisá los datos ingresados.", "campos": campos},
+    )
+
+
+async def manejar_error_de_campo(request: Request, exc: ErrorDeCampo) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.mensaje, "campos": {exc.campo: exc.mensaje}},
     )

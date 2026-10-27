@@ -7,7 +7,7 @@ import pytest
 from app.core.seguridad import decodificar_token
 from app.main import app
 from app.modelos.usuario import Rol
-from app.routers.auth import obtener_repositorio_talleres, obtener_repositorio_usuarios
+from app.routers.dependencias import obtener_repositorio_talleres, obtener_repositorio_usuarios
 from tests.falsos import RepositorioTalleresFalso, RepositorioUsuariosFalso
 
 CORREO = "diego.paz@correo.com"

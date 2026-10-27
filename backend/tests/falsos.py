@@ -1,8 +1,10 @@
 """Repositorios en memoria que imitan a los de MongoDB, para tests sin base."""
 
+import copy
 from datetime import UTC, datetime
 
 from app.core.seguridad import hashear_contrasena
+from app.repositorios.talleres import CuitYaRegistrado
 from app.repositorios.usuarios import CorreoYaRegistrado
 
 
@@ -10,7 +12,7 @@ class RepositorioUsuariosFalso:
     def __init__(self):
         self.usuarios: list[dict] = []
 
-    async def insertar(self, usuario: dict) -> str:
+    async def insertar(self, usuario: dict, sesion=None) -> str:
         if any(u["correo"] == usuario["correo"] for u in self.usuarios):
             raise CorreoYaRegistrado
         usuario = {"_id": f"id{len(self.usuarios) + 1}", **usuario}
@@ -55,5 +57,28 @@ class RepositorioTalleresFalso:
     def __init__(self):
         self.talleres: list[dict] = []
 
+    async def insertar(self, taller: dict, sesion=None) -> str:
+        if any(t["cuit"] == taller["cuit"] for t in self.talleres if "cuit" in t):
+            raise CuitYaRegistrado
+        taller = {"_id": f"taller{len(self.talleres) + 1}", **taller}
+        self.talleres.append(taller)
+        return taller["_id"]
+
     async def buscar_por_usuario(self, usuario_id) -> dict | None:
         return next((t for t in self.talleres if t["usuario_id"] == usuario_id), None)
+
+
+class TransaccionFalsa:
+    """Imita a `en_transaccion`: si la función falla, deshace lo que escribió en los repositorios."""
+
+    def __init__(self, *repositorios):
+        self.repositorios = repositorios
+
+    async def __call__(self, funcion):
+        copias = [copy.deepcopy(vars(repo)) for repo in self.repositorios]
+        try:
+            return await funcion(None)
+        except Exception:
+            for repo, copia in zip(self.repositorios, copias):
+                vars(repo).update(copia)
+            raise

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from bson import ObjectId
 from pymongo import ReturnDocument
+from pymongo.asynchronous.client_session import AsyncClientSession
 from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.errors import DuplicateKeyError
 
@@ -14,13 +15,13 @@ class RepositorioUsuarios:
     def __init__(self, db: AsyncDatabase):
         self._coleccion = db["usuarios"]
 
-    async def insertar(self, usuario: dict) -> str:
+    async def insertar(self, usuario: dict, sesion: AsyncClientSession | None = None) -> ObjectId:
         """Inserta el usuario. El índice único sobre `correo` evita duplicados aun con altas simultáneas."""
         try:
-            resultado = await self._coleccion.insert_one(usuario)
+            resultado = await self._coleccion.insert_one(usuario, session=sesion)
         except DuplicateKeyError as error:
             raise CorreoYaRegistrado from error
-        return str(resultado.inserted_id)
+        return resultado.inserted_id
 
     async def buscar_por_correo(self, correo: str) -> dict | None:
         return await self._coleccion.find_one({"correo": correo})

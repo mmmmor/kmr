@@ -70,6 +70,28 @@ def test_login_y_bloqueo_con_mongodb_real(cliente_con_base):
     assert usuario["intentos_login_fallidos"] == 0
 
 
+def test_solicitud_de_taller_con_cuit_repetido_revierte_la_transaccion(cliente_con_base):
+    datos = {
+        "nombre": "Diego", "apellido": "Paz", "correo": "taller1@correo.com", "contrasena": "Clave1234",
+        "razon_social": "Taller Los Álamos", "cuit": "30-71589234-7",
+        "domicilio": "Av. Colón 1543", "telefono": "351 555-0142",
+    }
+
+    alta = cliente_con_base.post("/api/talleres/solicitud", json=datos)
+    repetido = cliente_con_base.post("/api/talleres/solicitud", json={**datos, "correo": "taller2@correo.com"})
+
+    assert alta.status_code == 201
+    assert repetido.status_code == 409
+    assert repetido.json()["campos"] == {"cuit": "Ya hay un taller registrado con ese CUIT."}
+    with MongoClient(URI_TEST) as cliente_sync:
+        base = cliente_sync[BASE_TEST]
+        assert base["usuarios"].count_documents({}) == 1, "quedó un usuario sin solicitud"
+        assert base["usuarios"].find_one({"correo": "taller2@correo.com"}) is None
+        taller = base["talleres"].find_one()
+    assert taller["estado_solicitud"] == "pendiente"
+    assert taller["cuit"] == "30715892347"
+
+
 def test_mongodb_es_replica_set_y_admite_transacciones():
     with MongoClient(URI_TEST, serverSelectionTimeoutMS=5000) as cliente:
         assert cliente.admin.command("hello").get("setName"), "MongoDB no corre como replica set"
