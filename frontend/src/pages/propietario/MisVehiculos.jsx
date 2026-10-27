@@ -6,12 +6,15 @@ import LayoutPanel from '../../components/LayoutPanel.jsx'
 import PanelDeslizable from '../../components/PanelDeslizable.jsx'
 import Patente from '../../components/Patente.jsx'
 import { formatearDominio } from '../../utils/dominio.js'
+import { formatearFecha } from '../../utils/fechas.js'
+import { formatearMiles } from '../../utils/intervenciones.js'
 import { ENLACES_PROPIETARIO } from './navegacion.js'
 import VincularVehiculo from './VincularVehiculo.jsx'
 import '../../components/formulario.css'
 import './MisVehiculos.css'
 
 function TarjetaVehiculo({ vehiculo }) {
+  const ultima = vehiculo.ultima_lectura
   return (
     <article className="vehiculo">
       <div className="vehiculo-encabezado">
@@ -23,7 +26,20 @@ function TarjetaVehiculo({ vehiculo }) {
           <p>Modelo {vehiculo.anio}</p>
         </div>
       </div>
-      <p className="vehiculo-sin-registros">Todavía no hay intervenciones registradas.</p>
+      {ultima ? (
+        <dl className="vehiculo-lectura">
+          <div>
+            <dt>Último kilometraje</dt>
+            <dd className="mono">{formatearMiles(ultima.kilometraje)} km</dd>
+          </div>
+          <div>
+            <dt>Último servicio</dt>
+            <dd className="mono">{formatearFecha(ultima.fecha)}</dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="vehiculo-sin-registros">Todavía no hay intervenciones registradas.</p>
+      )}
       <div className="vehiculo-acciones">
         <Link className="boton-secundario" to={`/propietario/codigo?vehiculo=${vehiculo.id}`}>
           <KeyRound size={18} aria-hidden="true" />

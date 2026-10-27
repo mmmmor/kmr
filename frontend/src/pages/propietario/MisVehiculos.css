@@ -40,6 +40,26 @@
   color: var(--color-texto-suave);
 }
 
+.vehiculo-lectura {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 22px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-borde);
+}
+
+.vehiculo-lectura dt {
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.vehiculo-lectura dd {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
 .vehiculo-acciones {
   display: flex;
   gap: 12px;

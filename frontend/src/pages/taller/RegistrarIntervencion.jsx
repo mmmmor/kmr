@@ -18,7 +18,7 @@ const PASOS = ['Autorización', 'Datos del servicio', 'Confirmación']
 function PasoConfirmacion({ intervencion, alRegistrarOtra }) {
   const cantidadItems = intervencion.items.length
   return (
-    <section className="tarjeta-taller confirmacion" aria-labelledby="titulo-confirmacion">
+    <section className="tarjeta-intervencion confirmacion" aria-labelledby="titulo-confirmacion">
       <span className="confirmacion-icono">
         <CircleCheck size={36} aria-hidden="true" />
       </span>
