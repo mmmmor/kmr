@@ -1,7 +1,12 @@
-import pytest
-from fastapi.testclient import TestClient
+import os
 
-from app.main import app
+# Clave solo para tests; tiene que estar definida antes de importar la app.
+os.environ["JWT_SECRET"] = "clave-de-prueba-que-no-se-usa-en-ningun-entorno-real"
+
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+from app.main import app  # noqa: E402
 
 
 @pytest.fixture
