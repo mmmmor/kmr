@@ -49,6 +49,7 @@ def test_credenciales_correctas_devuelven_token_y_rol(login, usuarios):
     cuerpo = respuesta.json()
     assert cuerpo["rol"] == "propietario"
     assert cuerpo["nombre"] == "Diego"
+    assert cuerpo["apellido"] == "Paz"
     sesion = decodificar_token(cuerpo["token"])
     assert sesion.id == usuario["_id"]
     assert sesion.rol is Rol.PROPIETARIO

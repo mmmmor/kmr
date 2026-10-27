@@ -10,14 +10,25 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 4px;
   padding: 22px 16px;
   background: var(--color-superficie);
   border-right: 1px solid var(--color-borde);
 }
 
-.panel-lateral > .logo {
+.panel-barra {
   margin: 0 8px 28px;
+}
+
+.panel-barra .panel-boton-menu,
+.panel-barra .panel-avatar-barra {
+  display: none;
+}
+
+.panel-menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .panel-nav {
@@ -71,9 +82,14 @@
   border-top: 1px solid var(--color-borde);
 }
 
+.panel-usuario div {
+  min-width: 0;
+}
+
 .panel-usuario div strong,
 .panel-usuario div span {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .panel-usuario div span {
@@ -82,6 +98,7 @@
 }
 
 .panel-avatar {
+  flex-shrink: 0;
   display: grid;
   place-items: center;
   width: 40px;
@@ -109,6 +126,10 @@
   background: var(--color-fondo);
 }
 
+.panel-velo {
+  display: none;
+}
+
 .panel-contenido {
   padding: 40px 48px;
   min-width: 0;
@@ -120,47 +141,85 @@
   }
 
   .panel-lateral {
-    position: sticky;
-    z-index: 10;
+    z-index: 20;
     height: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
     padding: 10px 16px;
     border-right: none;
     border-bottom: 1px solid var(--color-borde);
   }
 
-  .panel-lateral > .logo {
+  .panel-barra {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin: 0;
+  }
+
+  .panel-barra .logo {
     flex: 1;
   }
 
-  .panel-usuario {
-    display: none;
+  .panel-barra .panel-boton-menu {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-left: -8px;
+    color: var(--color-texto);
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
   }
 
-  .panel-cerrar span {
+  .panel-boton-menu-aviso {
     position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
+    top: 7px;
+    right: 6px;
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--color-superficie);
+    border-radius: 50%;
+    background: var(--color-primario);
+  }
+
+  .panel-barra .panel-avatar-barra {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  /* El menú se despliega debajo de la barra y tapa el contenido. */
+  .panel-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    padding: 12px 16px 16px;
+    background: var(--color-superficie);
+    border-bottom: 1px solid var(--color-borde);
+    box-shadow: 0 12px 24px rgba(27, 31, 28, 0.12);
+  }
+
+  .panel-lateral.abierto .panel-menu {
+    display: flex;
   }
 
   .panel-nav {
-    order: 3;
-    flex: 1 0 100%;
-    flex-direction: row;
-    overflow-x: auto;
-    scrollbar-width: none;
-    margin-top: 8px;
+    margin-bottom: 8px;
   }
 
-  .panel-nav-enlace {
-    flex-shrink: 0;
-    font-size: 14px;
-    padding: 8px 10px;
+  .panel-velo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: rgba(27, 31, 28, 0.3);
   }
 
   .panel-contenido {

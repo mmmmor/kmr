@@ -118,6 +118,27 @@ def test_admin_lista_con_responsable_y_aprueba_con_mongodb_real(cliente_con_base
     assert cliente_con_base.get("/api/admin/solicitudes", headers=admin).json() == []
 
 
+def test_el_indice_unico_impide_vincular_un_dominio_a_dos_propietarios(cliente_con_base):
+    from bson import ObjectId
+
+    from app.core.seguridad import crear_token
+    from app.modelos.usuario import Rol
+
+    uno, otro = (
+        {"Authorization": f"Bearer {crear_token(str(ObjectId()), Rol.PROPIETARIO)}"} for _ in range(2)
+    )
+    datos = {"dominio": "AE123CD", "marca": "Volkswagen", "modelo": "Gol Trend", "anio": 2020}
+
+    alta = cliente_con_base.post("/api/vehiculos", json=datos, headers=uno)
+    repetido = cliente_con_base.post("/api/vehiculos", json={**datos, "dominio": "ae-123 cd"}, headers=otro)
+
+    assert alta.status_code == 201
+    assert repetido.status_code == 409
+    assert repetido.json()["detail"] == "Ese vehículo se encuentra vinculado a otro propietario."
+    assert [v["dominio"] for v in cliente_con_base.get("/api/vehiculos", headers=uno).json()] == ["AE123CD"]
+    assert cliente_con_base.get("/api/vehiculos", headers=otro).json() == []
+
+
 def test_mongodb_es_replica_set_y_admite_transacciones():
     with MongoClient(URI_TEST, serverSelectionTimeoutMS=5000) as cliente:
         assert cliente.admin.command("hello").get("setName"), "MongoDB no corre como replica set"

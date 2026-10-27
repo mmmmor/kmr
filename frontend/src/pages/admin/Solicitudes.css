@@ -256,23 +256,6 @@
   color: var(--color-texto-suave);
 }
 
-.casilla {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-  cursor: pointer;
-}
-
-.casilla input {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  accent-color: var(--color-primario);
-  cursor: pointer;
-}
-
 /* --- Acciones --- */
 
 .detalle-acciones {

@@ -47,6 +47,7 @@ class SesionSalida(BaseModel):
     token: str
     rol: Rol
     nombre: str
+    apellido: str
 
 
 class UsuarioSalida(BaseModel):
