@@ -23,6 +23,11 @@ async def crear_indices(db: AsyncDatabase) -> None:
     await db["vehiculos"].create_index("dominio", unique=True)
     await db["vehiculos"].create_index("propietario_id")
     await db["codigos_autorizacion"].create_index([("vehiculo_id", 1), ("estado", 1)])
+    await db["intervenciones"].create_index([("vehiculo_id", 1), ("fecha_registro", 1)])
+    await db["intervenciones"].create_index("taller_id")
+    await db["intervenciones"].create_index("corrige_a")
+    # Cadena de hash lineal: dos registros del mismo vehículo no pueden encadenar sobre el mismo anterior.
+    await db["intervenciones"].create_index([("vehiculo_id", 1), ("hash_anterior", 1)], unique=True)
 
 
 async def en_transaccion(funcion):

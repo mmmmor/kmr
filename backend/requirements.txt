@@ -4,6 +4,7 @@ pydantic-settings==2.16.1
 pymongo==4.19.0
 bcrypt==5.0.0
 PyJWT==2.15.1
+python-multipart==0.0.32
 
 # Tests
 pytest==9.1.1
