@@ -74,6 +74,23 @@
   border-color: var(--color-error);
 }
 
+.casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.casilla input {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--color-primario);
+  cursor: pointer;
+}
+
 .campo-ayuda,
 .campo-error {
   margin: 6px 0 0;
@@ -129,6 +146,16 @@
 .boton-primario:disabled {
   opacity: 0.7;
   cursor: wait;
+}
+
+/* Botón primario del ancho de su texto (al lado de otros botones). */
+.boton-primario.boton-ajustado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  padding: 13px 24px;
 }
 
 .boton-secundario {
