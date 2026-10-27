@@ -131,6 +131,43 @@
   cursor: wait;
 }
 
+.boton-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-texto);
+  text-decoration: none;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.boton-secundario:hover {
+  background: var(--color-fondo);
+}
+
+.boton-texto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-primario);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.mono {
+  font-family: var(--fuente-mono);
+}
+
 .pie-formulario {
   margin: 20px 0 0;
   text-align: center;
