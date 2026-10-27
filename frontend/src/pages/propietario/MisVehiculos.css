@@ -40,6 +40,17 @@
   color: var(--color-texto-suave);
 }
 
+.vehiculo-acciones {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.vehiculo-acciones > * {
+  flex: 1;
+  padding: 13px 16px;
+}
+
 .vehiculo-nuevo {
   display: flex;
   flex-direction: column;

@@ -1,0 +1,31 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.badge-exito {
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+}
+
+.badge-ambar {
+  background: var(--color-ambar-suave);
+  color: var(--color-ambar);
+}
+
+.badge-error {
+  background: var(--color-error-suave);
+  color: var(--color-error);
+}
+
+.badge-neutro {
+  background: #eceeea;
+  color: var(--color-texto);
+}

@@ -36,6 +36,19 @@ body {
   background: var(--color-fondo);
 }
 
+/* Oculto a la vista pero disponible para lectores de pantalla. */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .inicio {
   width: calc(100% - 32px);
   max-width: 640px;
