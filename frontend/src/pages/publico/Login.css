@@ -1,0 +1,16 @@
+/* En escritorio el formulario va centrado en la pantalla, como en el mockup. */
+.login {
+  max-width: 470px;
+  margin: 0 auto;
+  min-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .login {
+    max-width: none;
+    min-height: 0;
+  }
+}

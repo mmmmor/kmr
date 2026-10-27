@@ -52,6 +52,24 @@ def test_registro_guarda_en_mongodb_y_el_indice_rechaza_el_correo_repetido(clien
     assert usuarios[0]["contrasena_hash"].startswith("$2b$")
 
 
+def test_login_y_bloqueo_con_mongodb_real(cliente_con_base):
+    datos = {"nombre": "Diego", "apellido": "Paz", "correo": "diego@correo.com", "contrasena": "Clave1234"}
+    cliente_con_base.post("/api/auth/registro", json=datos)
+
+    def login(contrasena):
+        return cliente_con_base.post("/api/auth/login", json={"correo": "diego@correo.com", "contrasena": contrasena})
+
+    assert login("Clave1234").status_code == 200
+    respuestas = [login("mala").status_code for _ in range(5)]
+    assert respuestas == [401, 401, 401, 401, 429]
+    assert login("Clave1234").status_code == 429
+
+    with MongoClient(URI_TEST) as cliente_sync:
+        usuario = cliente_sync[BASE_TEST]["usuarios"].find_one({"correo": "diego@correo.com"})
+    assert usuario["bloqueado_hasta"] is not None
+    assert usuario["intentos_login_fallidos"] == 0
+
+
 def test_mongodb_es_replica_set_y_admite_transacciones():
     with MongoClient(URI_TEST, serverSelectionTimeoutMS=5000) as cliente:
         assert cliente.admin.command("hello").get("setName"), "MongoDB no corre como replica set"

@@ -31,11 +31,22 @@
   margin-bottom: 18px;
 }
 
-.campo label {
-  display: block;
+.campo-etiqueta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 6px;
+}
+
+.campo label {
   font-weight: 600;
   font-size: 15px;
+}
+
+.campo-etiqueta a {
+  font-size: 14px;
+  color: var(--color-primario);
 }
 
 .campo input {

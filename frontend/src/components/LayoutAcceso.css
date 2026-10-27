@@ -33,6 +33,12 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
+.acceso-panel .acceso-panel-texto {
+  margin: -12px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
 .acceso-panel-pie {
   margin: 0;
   font-size: 14px;
