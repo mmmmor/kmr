@@ -19,6 +19,13 @@ async def crear_indices(db: AsyncDatabase) -> None:
     """Crea los índices del modelo de datos (si ya existen, no hace nada)."""
     await db["usuarios"].create_index("correo", unique=True)
     await db["talleres"].create_index("usuario_id", unique=True)
+    await db["talleres"].create_index("cuit", unique=True)
+
+
+async def en_transaccion(funcion):
+    """Ejecuta `funcion(sesion)` en una transacción: se aplican todas sus escrituras o ninguna."""
+    async with _cliente.start_session() as sesion:
+        return await sesion.with_transaction(funcion)
 
 
 async def cerrar() -> None:

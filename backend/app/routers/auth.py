@@ -1,15 +1,17 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pymongo.asynchronous.database import AsyncDatabase
 
-from app.core.db import obtener_db
+from app.core.errores import ErrorDeCampo
 from app.esquemas.auth import LoginEntrada, RegistroEntrada, SesionSalida, UsuarioSalida
 from app.repositorios.talleres import RepositorioTalleres
 from app.repositorios.usuarios import CorreoYaRegistrado, RepositorioUsuarios
+from app.routers.dependencias import obtener_repositorio_talleres, obtener_repositorio_usuarios
 from app.servicios import auth as servicio_auth
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+MENSAJE_CORREO_REGISTRADO = "Ya existe una cuenta con ese correo electrónico."
 
 ESTADOS_ERROR_LOGIN = {
     "credenciales": status.HTTP_401_UNAUTHORIZED,
@@ -17,18 +19,6 @@ ESTADOS_ERROR_LOGIN = {
     "taller_pendiente": status.HTTP_403_FORBIDDEN,
     "taller_rechazado": status.HTTP_403_FORBIDDEN,
 }
-
-
-def obtener_repositorio_usuarios(
-    db: Annotated[AsyncDatabase, Depends(obtener_db)],
-) -> RepositorioUsuarios:
-    return RepositorioUsuarios(db)
-
-
-def obtener_repositorio_talleres(
-    db: Annotated[AsyncDatabase, Depends(obtener_db)],
-) -> RepositorioTalleres:
-    return RepositorioTalleres(db)
 
 
 @router.post("/registro", status_code=status.HTTP_201_CREATED)
@@ -40,10 +30,7 @@ async def registro(
     try:
         return await servicio_auth.registrar_propietario(datos, repo)
     except CorreoYaRegistrado:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Ya existe una cuenta con ese correo electrónico.",
-        )
+        raise ErrorDeCampo(status.HTTP_409_CONFLICT, "correo", MENSAJE_CORREO_REGISTRADO)
 
 
 @router.post("/login")

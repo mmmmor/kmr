@@ -4,7 +4,7 @@ import pytest
 
 from app.core.seguridad import verificar_contrasena
 from app.main import app
-from app.routers.auth import obtener_repositorio_usuarios
+from app.routers.dependencias import obtener_repositorio_usuarios
 from tests.falsos import RepositorioUsuariosFalso
 
 
