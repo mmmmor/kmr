@@ -8,8 +8,8 @@ from bson import ObjectId
 from app.core.seguridad import crear_token
 from app.main import app
 from app.modelos.usuario import Rol
-from app.routers.dependencias import obtener_repositorio_vehiculos
-from tests.falsos import RepositorioVehiculosFalso
+from app.routers.dependencias import obtener_repositorio_intervenciones, obtener_repositorio_vehiculos
+from tests.falsos import RepositorioIntervencionesFalso, RepositorioVehiculosFalso
 
 PROPIETARIO_ID = str(ObjectId())
 PROPIETARIO = {"Authorization": f"Bearer {crear_token(PROPIETARIO_ID, Rol.PROPIETARIO)}"}
@@ -20,8 +20,9 @@ DATOS_VALIDOS = {"dominio": "AE123CD", "marca": "Volkswagen", "modelo": "Gol Tre
 
 @pytest.fixture
 def vehiculos():
-    repo = RepositorioVehiculosFalso()
+    repo, intervenciones = RepositorioVehiculosFalso(), RepositorioIntervencionesFalso()
     app.dependency_overrides[obtener_repositorio_vehiculos] = lambda: repo
+    app.dependency_overrides[obtener_repositorio_intervenciones] = lambda: intervenciones
     return repo
 
 
@@ -49,6 +50,7 @@ def test_dominio_valido_y_datos_completos_vinculan_el_vehiculo(vincular, vehicul
         "modelo": "Gol Trend",
         "anio": 2020,
         "fecha_vinculacion": cuerpo["fecha_vinculacion"],
+        "ultima_lectura": None,
     }
     assert guardado["propietario_id"] == ObjectId(PROPIETARIO_ID)
     assert guardado["fecha_vinculacion"].tzinfo is not None

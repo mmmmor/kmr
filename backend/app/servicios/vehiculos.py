@@ -3,7 +3,8 @@ from datetime import UTC, datetime
 from bson import ObjectId
 from bson.errors import InvalidId
 
-from app.esquemas.vehiculos import VehiculoEntrada, VehiculoSalida
+from app.esquemas.vehiculos import UltimaLectura, VehiculoEntrada, VehiculoSalida
+from app.repositorios.intervenciones import RepositorioIntervenciones
 from app.repositorios.vehiculos import DominioYaVinculado, RepositorioVehiculos
 
 
@@ -44,8 +45,15 @@ async def vincular(datos: VehiculoEntrada, propietario_id: str, vehiculos: Repos
     return a_salida({"_id": vehiculo_id, **vehiculo})
 
 
-async def listar(propietario_id: str, vehiculos: RepositorioVehiculos) -> list[VehiculoSalida]:
-    return [a_salida(v) for v in await vehiculos.listar_por_propietario(ObjectId(propietario_id))]
+async def listar(
+    propietario_id: str, vehiculos: RepositorioVehiculos, intervenciones: RepositorioIntervenciones
+) -> list[VehiculoSalida]:
+    """Vehículos del propietario con su último kilometraje registrado (una consulta por vehículo: son pocos)."""
+    salidas = []
+    for vehiculo in await vehiculos.listar_por_propietario(ObjectId(propietario_id)):
+        ultima = await intervenciones.ultima_lectura(vehiculo["_id"])
+        salidas.append(a_salida(vehiculo, ultima))
+    return salidas
 
 
 async def obtener_propio(vehiculo_id: str, propietario_id: str, vehiculos: RepositorioVehiculos) -> dict:
@@ -63,7 +71,8 @@ async def obtener_propio(vehiculo_id: str, propietario_id: str, vehiculos: Repos
     return vehiculo
 
 
-def a_salida(vehiculo: dict) -> VehiculoSalida:
+def a_salida(vehiculo: dict, ultima: dict | None = None) -> VehiculoSalida:
+    """`ultima`: la intervención con la fecha de servicio más reciente, si hay."""
     return VehiculoSalida(
         id=str(vehiculo["_id"]),
         dominio=vehiculo["dominio"],
@@ -71,4 +80,7 @@ def a_salida(vehiculo: dict) -> VehiculoSalida:
         modelo=vehiculo["modelo"],
         anio=vehiculo["anio"],
         fecha_vinculacion=vehiculo["fecha_vinculacion"],
+        ultima_lectura=None if ultima is None else UltimaLectura(
+            kilometraje=ultima["kilometraje"], fecha=ultima["fecha_intervencion"]
+        ),
     )

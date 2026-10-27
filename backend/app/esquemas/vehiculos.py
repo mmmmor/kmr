@@ -47,6 +47,13 @@ class VehiculoEntrada(BaseModel):
         return anio
 
 
+class UltimaLectura(BaseModel):
+    """Kilometraje y fecha del servicio más reciente del vehículo."""
+
+    kilometraje: int
+    fecha: datetime
+
+
 class VehiculoSalida(BaseModel):
     id: str
     dominio: str
@@ -54,3 +61,4 @@ class VehiculoSalida(BaseModel):
     modelo: str
     anio: int
     fecha_vinculacion: datetime
+    ultima_lectura: UltimaLectura | None = None
