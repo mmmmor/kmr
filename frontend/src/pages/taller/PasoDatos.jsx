@@ -81,8 +81,8 @@ function PasoDatos({ autorizacion, formulario, alRegistrar, alCancelar, alRechaz
         </div>
       </div>
 
-      <div className="taller-grilla">
-        <form className="tarjeta-taller" onSubmit={enviar} noValidate>
+      <div className="intervencion-grilla">
+        <form className="tarjeta-intervencion" onSubmit={enviar} noValidate>
           {errorGeneral && (
             <p className="aviso aviso-error" role="alert">
               <CircleAlert size={18} aria-hidden="true" />
@@ -111,7 +111,7 @@ function PasoDatos({ autorizacion, formulario, alRegistrar, alCancelar, alRechaz
           </div>
         </form>
 
-        <aside className="antes-de-registrar">
+        <aside className="tarjeta-lateral">
           <h2>Antes de registrar</h2>
           <ul>
             {ANTES_DE_REGISTRAR.map((texto) => (

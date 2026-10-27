@@ -47,8 +47,8 @@ function PasoAutorizacion({ dominioInicial = '', errorCodigo = '', alAutorizar }
   }
 
   return (
-    <div className="taller-grilla">
-      <form className="tarjeta-taller" onSubmit={enviar} noValidate>
+    <div className="intervencion-grilla">
+      <form className="tarjeta-intervencion" onSubmit={enviar} noValidate>
         {errorGeneral && (
           <p className="aviso aviso-error" role="alert">
             <CircleAlert size={18} aria-hidden="true" />

@@ -14,7 +14,7 @@ from pydantic import (
 )
 
 from app.core.fechas import hoy_en_argentina
-from app.esquemas.vehiculos import Dominio
+from app.esquemas.vehiculos import Dominio, UltimaLectura
 from app.modelos.intervencion import TIPOS_INTERVENCION, Origen
 
 KM_MAXIMO = 2_000_000
@@ -151,11 +151,6 @@ class IntervencionTallerEntrada(IntervencionEntrada):
 
 
 # --- Salidas ---
-
-
-class UltimaLectura(BaseModel):
-    kilometraje: int
-    fecha: datetime
 
 
 class AutorizacionSalida(BaseModel):

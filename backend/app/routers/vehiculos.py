@@ -1,20 +1,27 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 
-from app.core.errores import ErrorDeCampo
+from app.core.errores import ErrorDeCampo, validar_json
 from app.core.seguridad import UsuarioSesion, requiere_rol
 from app.esquemas.codigos import CodigoSalida, CodigosVehiculoSalida
+from app.esquemas.intervenciones import IntervencionEntrada, IntervencionSalida
 from app.esquemas.vehiculos import VehiculoEntrada, VehiculoSalida
 from app.modelos.usuario import Rol
 from app.repositorios.codigos import RepositorioCodigos
+from app.repositorios.comprobantes import AlmacenComprobantes
+from app.repositorios.intervenciones import RepositorioIntervenciones
 from app.repositorios.vehiculos import RepositorioVehiculos
 from app.routers.dependencias import (
+    obtener_almacen_comprobantes,
     obtener_repositorio_codigos,
+    obtener_repositorio_intervenciones,
     obtener_repositorio_vehiculos,
     obtener_transaccion,
 )
+from app.routers.intervenciones import leer_comprobante_adjunto
 from app.servicios import codigos as servicio_codigos
+from app.servicios import intervenciones as servicio_intervenciones
 from app.servicios import vehiculos as servicio_vehiculos
 
 router = APIRouter(prefix="/vehiculos", tags=["vehiculos"])
@@ -22,6 +29,8 @@ router = APIRouter(prefix="/vehiculos", tags=["vehiculos"])
 Propietario = Annotated[UsuarioSesion, Depends(requiere_rol(Rol.PROPIETARIO))]
 Vehiculos = Annotated[RepositorioVehiculos, Depends(obtener_repositorio_vehiculos)]
 Codigos = Annotated[RepositorioCodigos, Depends(obtener_repositorio_codigos)]
+Intervenciones = Annotated[RepositorioIntervenciones, Depends(obtener_repositorio_intervenciones)]
+Comprobantes = Annotated[AlmacenComprobantes, Depends(obtener_almacen_comprobantes)]
 
 
 async def obtener_vehiculo_propio(vehiculo_id: str, propietario: Propietario, vehiculos: Vehiculos) -> dict:
@@ -50,9 +59,32 @@ async def vincular(datos: VehiculoEntrada, propietario: Propietario, vehiculos: 
 
 
 @router.get("")
-async def mis_vehiculos(propietario: Propietario, vehiculos: Vehiculos) -> list[VehiculoSalida]:
-    """Vehículos vinculados a la cuenta del propietario."""
-    return await servicio_vehiculos.listar(propietario.id, vehiculos)
+async def mis_vehiculos(
+    propietario: Propietario, vehiculos: Vehiculos, intervenciones: Intervenciones
+) -> list[VehiculoSalida]:
+    """Vehículos vinculados a la cuenta del propietario, con su último kilometraje registrado."""
+    return await servicio_vehiculos.listar(propietario.id, vehiculos, intervenciones)
+
+
+@router.post("/{vehiculo_id}/intervenciones", status_code=status.HTTP_201_CREATED)
+async def registrar_intervencion(
+    propietario: Propietario,
+    vehiculo: VehiculoPropio,
+    datos: Annotated[str, Form(description="JSON con los datos del servicio.")],
+    intervenciones: Intervenciones,
+    comprobantes: Comprobantes,
+    en_transaccion=Depends(obtener_transaccion),
+    comprobante: Annotated[UploadFile | None, File(description="PDF, JPG o PNG de hasta 5 MB.")] = None,
+) -> IntervencionSalida:
+    """Intervención autorreportada por el propietario, sin código (HU-008).
+
+    Se envía como multipart/form-data: `datos` (JSON) y, si hay, el archivo `comprobante`.
+    """
+    entrada = validar_json(IntervencionEntrada, datos)
+    adjunto = await leer_comprobante_adjunto(comprobante)
+    return await servicio_intervenciones.registrar_por_propietario(
+        entrada, vehiculo, propietario.id, adjunto, intervenciones, comprobantes, en_transaccion
+    )
 
 
 @router.post("/{vehiculo_id}/codigos", status_code=status.HTTP_201_CREATED)

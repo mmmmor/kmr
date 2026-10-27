@@ -13,8 +13,8 @@ from app.esquemas.intervenciones import (
     IntervencionTallerEntrada,
     ItemSalida,
     ProximaRevisionSalida,
-    UltimaLectura,
 )
+from app.esquemas.vehiculos import UltimaLectura
 from app.modelos.intervencion import Origen
 from app.modelos.usuario import Rol
 from app.repositorios.codigos import RepositorioCodigos
@@ -120,6 +120,24 @@ async def registrar_con_comprobante(
         if intervencion["comprobante_id"] is not None:
             await comprobantes.eliminar(intervencion["comprobante_id"])
         raise
+
+
+# --- Propietario (HU-008) ---
+
+
+async def registrar_por_propietario(
+    datos: IntervencionEntrada,
+    vehiculo: dict,
+    propietario_id: str,
+    comprobante: tuple[bytes, str, str] | None,
+    intervenciones: RepositorioIntervenciones,
+    comprobantes: AlmacenComprobantes,
+    en_transaccion,
+) -> IntervencionSalida:
+    """Intervención autorreportada: sin taller ni código, se muestra como "Autorreportado por el propietario"."""
+    intervencion = nueva(datos, vehiculo["_id"], Origen.PROPIETARIO, ObjectId(propietario_id))
+    documento = await registrar_con_comprobante(intervencion, comprobante, intervenciones, comprobantes, en_transaccion)
+    return a_salida(documento, vehiculo["dominio"])
 
 
 # --- Taller (HU-007) ---
