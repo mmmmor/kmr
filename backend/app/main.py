@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core import db
 from app.core.config import obtener_settings
 from app.core.errores import ErrorDeCampo, manejar_error_de_campo, manejar_error_validacion
-from app.routers import auth, salud, talleres
+from app.routers import admin, auth, salud, talleres
 
 
 @asynccontextmanager
@@ -32,6 +32,7 @@ def crear_app() -> FastAPI:
     app.include_router(salud.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
     app.include_router(talleres.router, prefix="/api")
+    app.include_router(admin.router, prefix="/api")
     return app
 
 

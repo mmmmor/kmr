@@ -3,6 +3,8 @@
 import copy
 from datetime import UTC, datetime
 
+from bson import ObjectId
+
 from app.core.seguridad import hashear_contrasena
 from app.repositorios.talleres import CuitYaRegistrado
 from app.repositorios.usuarios import CorreoYaRegistrado
@@ -56,16 +58,37 @@ class RepositorioUsuariosFalso:
 class RepositorioTalleresFalso:
     def __init__(self):
         self.talleres: list[dict] = []
+        self.usuarios: RepositorioUsuariosFalso | None = None  # para el $lookup del responsable
 
-    async def insertar(self, taller: dict, sesion=None) -> str:
+    async def insertar(self, taller: dict, sesion=None) -> ObjectId:
         if any(t["cuit"] == taller["cuit"] for t in self.talleres if "cuit" in t):
             raise CuitYaRegistrado
-        taller = {"_id": f"taller{len(self.talleres) + 1}", **taller}
+        taller = {"_id": ObjectId(), **taller}
         self.talleres.append(taller)
         return taller["_id"]
 
     async def buscar_por_usuario(self, usuario_id) -> dict | None:
         return next((t for t in self.talleres if t["usuario_id"] == usuario_id), None)
+
+    async def buscar(self, taller_id) -> dict | None:
+        return next((t for t in self.talleres if t["_id"] == taller_id), None)
+
+    async def listar_con_responsable(self, estado) -> list[dict]:
+        en_estado = [t for t in self.talleres if t["estado_solicitud"] == estado.value]
+        en_estado.sort(key=lambda t: t["fecha_solicitud"], reverse=True)
+        return [{**t, "responsable": self.usuarios._por_id(t["usuario_id"])} for t in en_estado]
+
+    async def resolver_pendiente(self, taller_id, estado, administrador_id, fecha, motivo_rechazo=None) -> bool:
+        taller = await self.buscar(taller_id)
+        if taller is None or taller["estado_solicitud"] != "pendiente":
+            return False
+        taller.update(
+            estado_solicitud=estado.value,
+            motivo_rechazo=motivo_rechazo,
+            aprobado_por=administrador_id,
+            fecha_resolucion=fecha,
+        )
+        return True
 
 
 class TransaccionFalsa:
@@ -75,7 +98,11 @@ class TransaccionFalsa:
         self.repositorios = repositorios
 
     async def __call__(self, funcion):
-        copias = [copy.deepcopy(vars(repo)) for repo in self.repositorios]
+        # Solo se copian los datos (listas de documentos), no las referencias entre repositorios.
+        copias = [
+            {k: copy.deepcopy(v) for k, v in vars(repo).items() if isinstance(v, list)}
+            for repo in self.repositorios
+        ]
         try:
             return await funcion(None)
         except Exception:

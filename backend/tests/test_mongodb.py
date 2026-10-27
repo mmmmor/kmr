@@ -92,6 +92,32 @@ def test_solicitud_de_taller_con_cuit_repetido_revierte_la_transaccion(cliente_c
     assert taller["cuit"] == "30715892347"
 
 
+def test_admin_lista_con_responsable_y_aprueba_con_mongodb_real(cliente_con_base):
+    from bson import ObjectId
+
+    from app.core.seguridad import crear_token
+    from app.modelos.usuario import Rol
+
+    admin = {"Authorization": f"Bearer {crear_token(str(ObjectId()), Rol.ADMINISTRADOR)}"}
+    datos = {
+        "nombre": "Diego", "apellido": "Paz", "correo": "taller@correo.com", "contrasena": "Clave1234",
+        "razon_social": "Taller Los Álamos", "cuit": "30715892347",
+        "domicilio": "Av. Colón 1543", "telefono": "351 555-0142",
+    }
+    cliente_con_base.post("/api/talleres/solicitud", json=datos)
+
+    pendientes = cliente_con_base.get("/api/admin/solicitudes", headers=admin).json()
+    assert len(pendientes) == 1
+    assert pendientes[0]["responsable"] == {"nombre": "Diego", "apellido": "Paz", "correo": "taller@correo.com"}
+
+    aprobar = cliente_con_base.post(f"/api/admin/solicitudes/{pendientes[0]['id']}/aprobar", headers=admin)
+    login = cliente_con_base.post("/api/auth/login", json={"correo": "taller@correo.com", "contrasena": "Clave1234"})
+
+    assert aprobar.status_code == 204
+    assert login.status_code == 200
+    assert cliente_con_base.get("/api/admin/solicitudes", headers=admin).json() == []
+
+
 def test_mongodb_es_replica_set_y_admite_transacciones():
     with MongoClient(URI_TEST, serverSelectionTimeoutMS=5000) as cliente:
         assert cliente.admin.command("hello").get("setName"), "MongoDB no corre como replica set"

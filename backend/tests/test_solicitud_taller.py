@@ -49,7 +49,7 @@ def test_solicitud_completa_queda_pendiente(solicitar, repos):
 
     assert respuesta.status_code == 201
     assert respuesta.json() == {
-        "id": "taller1",
+        "id": str(talleres.talleres[0]["_id"]),
         "razon_social": "Taller Mecánico Los Álamos",
         "cuit": "30715892347",
         "estado_solicitud": "pendiente",
