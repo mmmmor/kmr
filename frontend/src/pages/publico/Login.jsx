@@ -83,6 +83,13 @@ function Login() {
             Tu cuenta fue creada. Ya podés iniciar sesión.
           </p>
         )}
+        {state?.solicitudEnviada && !errorGeneral && (
+          <p className="aviso aviso-exito" role="status">
+            <CircleCheck size={18} aria-hidden="true" />
+            Recibimos tu solicitud de alta. Quedó pendiente de revisión: vas a poder iniciar
+            sesión cuando un administrador la apruebe.
+          </p>
+        )}
         {errorGeneral && (
           <p className="aviso aviso-error" role="alert">
             <CircleAlert size={18} aria-hidden="true" />

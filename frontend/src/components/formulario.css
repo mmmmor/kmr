@@ -65,6 +65,11 @@
   border-color: transparent;
 }
 
+.campo input.campo-mono {
+  font-family: var(--fuente-mono);
+  letter-spacing: 0.04em;
+}
+
 .campo-invalido input {
   border-color: var(--color-error);
 }

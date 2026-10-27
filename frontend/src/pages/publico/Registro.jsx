@@ -1,13 +1,23 @@
 import { useState } from 'react'
-import { Car, CircleAlert, Store, Wrench } from 'lucide-react'
+import { Car, CircleAlert, Clock, Store, Wrench } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { registrarPropietario } from '../../api/auth.js'
+import { solicitarAltaTaller } from '../../api/talleres.js'
 import Campo from '../../components/Campo.jsx'
 import LayoutAcceso from '../../components/LayoutAcceso.jsx'
 import '../../components/formulario.css'
 import './Registro.css'
 
-const VACIO = { nombre: '', apellido: '', correo: '', contrasena: '' }
+const VACIO = {
+  nombre: '',
+  apellido: '',
+  correo: '',
+  contrasena: '',
+  razon_social: '',
+  cuit: '',
+  telefono: '',
+  domicilio: '',
+}
 
 function PanelRegistro() {
   return (
@@ -43,6 +53,8 @@ function PanelRegistro() {
 
 function Registro() {
   const navigate = useNavigate()
+  const [tipo, setTipo] = useState('propietario')
+  const esTaller = tipo === 'taller'
   const [datos, setDatos] = useState(VACIO)
   const [errores, setErrores] = useState({})
   const [errorGeneral, setErrorGeneral] = useState('')
@@ -59,20 +71,31 @@ function Registro() {
     setEnviando(true)
     setErrorGeneral('')
     try {
-      await registrarPropietario(datos)
-      navigate('/login', { state: { registrado: true } })
+      if (esTaller) {
+        await solicitarAltaTaller(datos)
+        navigate('/login', { state: { solicitudEnviada: true } })
+      } else {
+        await registrarPropietario(datos)
+        navigate('/login', { state: { registrado: true } })
+      }
     } catch (error) {
       const campos = error.campos ?? {}
       setErrores(campos)
-      if (error.estado === 409) {
-        setErrores({ correo: error.message })
-      } else if (Object.keys(campos).length === 0) {
-        setErrorGeneral(error.message)
-      }
+      if (Object.keys(campos).length === 0) setErrorGeneral(error.message)
     } finally {
       setEnviando(false)
     }
   }
+
+  function elegirTipo(nuevo) {
+    setTipo(nuevo)
+    setErrores({})
+    setErrorGeneral('')
+  }
+
+  const textoBoton = esTaller
+    ? enviando ? 'Enviando solicitud…' : 'Enviar solicitud de alta'
+    : enviando ? 'Creando cuenta…' : 'Crear cuenta'
 
   return (
     <LayoutAcceso panel={<PanelRegistro />} enlaceEncabezado={<Link to="/login">Ingresar</Link>}>
@@ -80,25 +103,25 @@ function Registro() {
       <p className="subtitulo-pagina">Elegí cómo vas a usar KmR.</p>
 
       <div className="registro-tipo" role="group" aria-label="Tipo de cuenta">
-        <button type="button" className="registro-tipo-opcion activa" aria-pressed="true">
+        <button
+          type="button"
+          className={`registro-tipo-opcion ${esTaller ? '' : 'activa'}`}
+          aria-pressed={!esTaller}
+          onClick={() => elegirTipo('propietario')}
+        >
           <Car size={18} aria-hidden="true" />
           Soy propietario
         </button>
-        {/* El alta de talleres llega con la HU-003: la opción se ve pero no se puede elegir. */}
         <button
           type="button"
-          className="registro-tipo-opcion"
-          aria-pressed="false"
-          aria-describedby="registro-taller-pronto"
-          disabled
+          className={`registro-tipo-opcion ${esTaller ? 'activa' : ''}`}
+          aria-pressed={esTaller}
+          onClick={() => elegirTipo('taller')}
         >
           <Store size={18} aria-hidden="true" />
           Soy taller
         </button>
       </div>
-      <p id="registro-taller-pronto" className="registro-tipo-nota">
-        El alta de talleres estará disponible próximamente.
-      </p>
 
       {errorGeneral && (
         <p className="aviso aviso-error" role="alert">
@@ -148,8 +171,59 @@ function Registro() {
           ayuda="Mínimo 8 caracteres, con al menos una mayúscula y un número."
         />
 
+        {esTaller && (
+          <>
+            <p className="seccion-formulario">Datos del establecimiento</p>
+            <Campo
+              id="razon_social"
+              etiqueta="Razón social"
+              autoComplete="organization"
+              value={datos.razon_social}
+              onChange={cambiar}
+              error={errores.razon_social}
+            />
+            <div className="fila-campos">
+              <Campo
+                id="cuit"
+                etiqueta="CUIT"
+                className="campo-mono"
+                inputMode="numeric"
+                placeholder="30-71589234-7"
+                value={datos.cuit}
+                onChange={cambiar}
+                error={errores.cuit}
+              />
+              <Campo
+                id="telefono"
+                etiqueta="Teléfono"
+                type="tel"
+                autoComplete="tel"
+                value={datos.telefono}
+                onChange={cambiar}
+                error={errores.telefono}
+              />
+            </div>
+            <Campo
+              id="domicilio"
+              etiqueta="Domicilio"
+              autoComplete="street-address"
+              value={datos.domicilio}
+              onChange={cambiar}
+              error={errores.domicilio}
+            />
+
+            <p className="aviso aviso-exito">
+              <Clock size={18} aria-hidden="true" />
+              <span>
+                Tu solicitud quedará <strong>pendiente</strong> hasta que un administrador
+                verifique el establecimiento. Vas a poder iniciar sesión una vez aprobada.
+              </span>
+            </p>
+          </>
+        )}
+
         <button type="submit" className="boton-primario" disabled={enviando}>
-          {enviando ? 'Creando cuenta…' : 'Crear cuenta'}
+          {textoBoton}
         </button>
       </form>
 
