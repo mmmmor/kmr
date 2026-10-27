@@ -64,3 +64,10 @@
 .registro-tipo + .registro-tipo-nota + .aviso {
   margin-top: 16px;
 }
+
+/* En el celular los botones van sin ícono, como en el mockup, para que el texto entre en una línea. */
+@media (max-width: 600px) {
+  .registro-tipo-opcion svg {
+    display: none;
+  }
+}
