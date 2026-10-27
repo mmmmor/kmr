@@ -1,19 +1,24 @@
 """Tests contra un MongoDB real. Solo corren si está definida MONGODB_URI_TEST (en CI, el service del workflow)."""
 
 import asyncio
+import json
 import os
+from datetime import timedelta
 
 import pytest
 from bson import ObjectId
 from fastapi.testclient import TestClient
 from pymongo import AsyncMongoClient, MongoClient
+from pymongo.errors import DuplicateKeyError
 
 from app.core.config import obtener_settings
+from app.core.fechas import hoy_en_argentina
 from app.core.seguridad import crear_token
 from app.main import app
 from app.modelos.usuario import Rol
 from app.repositorios.codigos import RepositorioCodigos
 from app.servicios import codigos as servicio_codigos
+from app.servicios.hash import verificar_cadena
 
 URI_TEST = os.environ.get("MONGODB_URI_TEST")
 BASE_TEST = "kmr_test"
@@ -212,6 +217,64 @@ def test_el_sexto_intento_fallido_invalida_el_codigo_con_mongodb_real(cliente_co
     assert con_cinco["vigente"]["intentos_fallidos"] == 5
     assert con_seis["vigente"] is None
     assert (con_seis["anteriores"][0]["estado"], con_seis["anteriores"][0]["intentos_fallidos"]) == ("invalidado", 6)
+
+
+def _taller_aprobado(cliente):
+    """Solicitud de taller aprobada por un administrador. Devuelve los headers de sesión del taller."""
+    admin = {"Authorization": f"Bearer {crear_token(str(ObjectId()), Rol.ADMINISTRADOR)}"}
+    cliente.post("/api/talleres/solicitud", json={
+        "nombre": "Sergio", "apellido": "Molina", "correo": "taller@correo.com", "contrasena": "Clave1234",
+        "razon_social": "Lubricentro San Martín", "cuit": "30715892347",
+        "domicilio": "Av. San Martín 1234", "telefono": "351 555-0142",
+    })
+    solicitud = cliente.get("/api/admin/solicitudes", headers=admin).json()[0]
+    cliente.post(f"/api/admin/solicitudes/{solicitud['id']}/aprobar", headers=admin)
+    sesion = cliente.post("/api/auth/login", json={"correo": "taller@correo.com", "contrasena": "Clave1234"}).json()
+    assert sesion["razon_social"] == "Lubricentro San Martín"
+    return {"Authorization": f"Bearer {sesion['token']}"}
+
+
+def test_registro_del_taller_con_mongodb_real(cliente_con_base):
+    pdf = b"%PDF-1.7\n% comprobante de prueba\n"
+    taller = _taller_aprobado(cliente_con_base)
+    propietario, vehiculo = _propietario_con_vehiculo(cliente_con_base)
+    ayer = (hoy_en_argentina() - timedelta(days=1)).isoformat()
+
+    def registrar(kilometraje, archivo=None):
+        codigo = cliente_con_base.post(f"/api/vehiculos/{vehiculo['id']}/codigos", headers=propietario).json()
+        autorizacion = cliente_con_base.post(
+            "/api/taller/autorizacion", json={"dominio": "AE 123 CD", "codigo": codigo["codigo"]}, headers=taller
+        )
+        assert autorizacion.status_code == 200
+        datos = {
+            "dominio": "AE123CD", "codigo": codigo["codigo"], "fecha_intervencion": ayer, "kilometraje": kilometraje,
+            "tipo": "Frenos", "items": [{"descripcion": "Disco de freno delantero", "cantidad": 2}],
+        }
+        return cliente_con_base.post(
+            "/api/taller/intervenciones",
+            data={"datos": json.dumps(datos)},
+            files={"comprobante": archivo} if archivo else None,
+            headers=taller,
+        )
+
+    primera = registrar(98450, ("factura.pdf", pdf, "application/pdf"))
+    segunda = registrar(100210)
+
+    assert (primera.status_code, segunda.status_code) == (201, 201)
+    with MongoClient(URI_TEST, tz_aware=True) as cliente_sync:
+        base = cliente_sync[BASE_TEST]
+        guardadas = list(base["intervenciones"].find({"vehiculo_id": ObjectId(vehiculo["id"])}).sort("fecha_registro", 1))
+        # El hash recalculado desde lo que devuelve MongoDB coincide con el calculado al insertar.
+        assert verificar_cadena(guardadas)
+        assert guardadas[1]["hash_anterior"] == guardadas[0]["hash"]
+        with pytest.raises(DuplicateKeyError):
+            base["intervenciones"].insert_one({**guardadas[1], "_id": ObjectId()})
+        assert base["codigos_autorizacion"].count_documents({"estado": "utilizado"}) == 2
+
+    descarga = cliente_con_base.get(f"/api/intervenciones/{primera.json()['id']}/comprobante", headers=propietario)
+    assert (descarga.status_code, descarga.content) == (200, pdf)
+    registros = cliente_con_base.get("/api/taller/intervenciones", headers=taller).json()
+    assert [(r["kilometraje"], r["dominio"]) for r in registros] == [(100210, "AE123CD"), (98450, "AE123CD")]
 
 
 def test_mongodb_es_replica_set_y_admite_transacciones():

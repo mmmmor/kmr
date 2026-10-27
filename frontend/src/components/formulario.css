@@ -49,7 +49,9 @@
   color: var(--color-primario);
 }
 
-.campo input {
+.campo input,
+.campo select,
+.campo textarea {
   width: 100%;
   padding: 12px 14px;
   font: inherit;
@@ -59,7 +61,13 @@
   border-radius: 10px;
 }
 
-.campo input:focus {
+.campo textarea {
+  resize: vertical;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
   outline: 2px solid var(--color-primario);
   outline-offset: 1px;
   border-color: transparent;
@@ -70,8 +78,39 @@
   letter-spacing: 0.04em;
 }
 
-.campo-invalido input {
+/* Dominio: letras separadas, como en la patente. */
+.campo input.campo-dominio {
+  font-size: 20px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.campo input.campo-dominio::placeholder {
+  letter-spacing: 0.2em;
+  color: #b7beb9;
+}
+
+.campo-invalido input,
+.campo-invalido select,
+.campo-invalido textarea {
   border-color: var(--color-error);
+}
+
+.campo-con-sufijo {
+  position: relative;
+}
+
+.campo-con-sufijo input {
+  padding-right: 52px;
+}
+
+.campo-sufijo {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  color: var(--color-texto-suave);
+  pointer-events: none;
 }
 
 .casilla {

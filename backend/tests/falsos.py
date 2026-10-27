@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from bson import ObjectId
 
 from app.core.seguridad import hashear_contrasena
+from app.repositorios.intervenciones import CadenaModificada
 from app.repositorios.talleres import CuitYaRegistrado
 from app.repositorios.usuarios import CorreoYaRegistrado
 from app.repositorios.vehiculos import DominioYaVinculado
@@ -167,6 +168,58 @@ class RepositorioCodigosFalso:
         if taller_id is None or self.talleres is None:
             return None
         return next(t["razon_social"] for t in self.talleres.talleres if t["_id"] == taller_id)
+
+
+class RepositorioIntervencionesFalso:
+    """Solo inserción y consultas, como el real. Imita el índice único (vehiculo_id, hash_anterior)."""
+
+    def __init__(self):
+        self.intervenciones: list[dict] = []
+        self.vehiculos: RepositorioVehiculosFalso | None = None  # para el dominio del listado del taller
+
+    async def insertar(self, intervencion: dict, sesion=None) -> ObjectId:
+        clave = (intervencion["vehiculo_id"], intervencion["hash_anterior"])
+        if any((i["vehiculo_id"], i["hash_anterior"]) == clave for i in self.intervenciones):
+            raise CadenaModificada
+        guardada = {"_id": ObjectId(), **copy.deepcopy(intervencion)}
+        self.intervenciones.append(guardada)
+        return guardada["_id"]
+
+    async def buscar(self, intervencion_id) -> dict | None:
+        return next((i for i in self.intervenciones if i["_id"] == intervencion_id), None)
+
+    async def ultima_registrada(self, vehiculo_id, sesion=None) -> dict | None:
+        del_vehiculo = [i for i in self.intervenciones if i["vehiculo_id"] == vehiculo_id]
+        return max(del_vehiculo, key=lambda i: (i["fecha_registro"], i["_id"]), default=None)
+
+    async def ultima_lectura(self, vehiculo_id) -> dict | None:
+        del_vehiculo = [i for i in self.intervenciones if i["vehiculo_id"] == vehiculo_id]
+        return max(del_vehiculo, key=lambda i: (i["fecha_intervencion"], i["fecha_registro"]), default=None)
+
+    async def listar_por_vehiculo(self, vehiculo_id) -> list[dict]:
+        del_vehiculo = [i for i in self.intervenciones if i["vehiculo_id"] == vehiculo_id]
+        return sorted(del_vehiculo, key=lambda i: (i["fecha_registro"], i["_id"]))
+
+    async def listar_por_taller(self, taller_id) -> list[dict]:
+        del_taller = [i for i in self.intervenciones if i["taller_id"] == taller_id]
+        del_taller.sort(key=lambda i: (i["fecha_registro"], i["_id"]), reverse=True)
+        return [{**i, "dominio": (await self.vehiculos.buscar(i["vehiculo_id"]))["dominio"]} for i in del_taller]
+
+
+class AlmacenComprobantesFalso:
+    def __init__(self):
+        self.archivos: dict[ObjectId, tuple[bytes, str, str]] = {}
+
+    async def guardar(self, nombre: str, contenido: bytes, tipo: str) -> ObjectId:
+        comprobante_id = ObjectId()
+        self.archivos[comprobante_id] = (contenido, nombre, tipo)
+        return comprobante_id
+
+    async def leer(self, comprobante_id) -> tuple[bytes, str, str]:
+        return self.archivos[comprobante_id]
+
+    async def eliminar(self, comprobante_id) -> None:
+        del self.archivos[comprobante_id]
 
 
 class TransaccionFalsa:

@@ -103,44 +103,6 @@
   color: var(--color-texto-suave);
 }
 
-.campo input.campo-dominio {
-  font-size: 20px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-.campo input.campo-dominio::placeholder {
-  letter-spacing: 0.2em;
-  color: #b7beb9;
-}
-
-.vista-patente {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  margin: 4px 0 24px;
-  padding: 30px 16px 24px;
-  background: var(--color-fondo);
-  border-radius: 16px;
-}
-
-.vista-patente p {
-  margin: 0;
-  font-weight: 600;
-  color: var(--color-primario);
-  text-align: center;
-}
-
-.vista-patente-vacia {
-  padding: 22px 16px;
-}
-
-.vista-patente-vacia p {
-  font-weight: 400;
-  color: var(--color-texto-suave);
-}
-
 .vincular-declaracion {
   margin: 6px 0 0;
 }
@@ -156,9 +118,5 @@
 
   .vehiculo .patente-mediano {
     font-size: 30px;
-  }
-
-  .vista-patente .patente-grande {
-    font-size: 44px;
   }
 }

@@ -186,12 +186,15 @@ def test_taller_rechazado_informa_el_motivo(login, usuarios, talleres):
 
 def test_taller_aprobado_ingresa(login, usuarios, talleres):
     usuario = usuarios.agregar(CORREO, CONTRASENA, rol="taller")
-    talleres.talleres.append({"usuario_id": usuario["_id"], "estado_solicitud": "aprobado"})
+    talleres.talleres.append(
+        {"usuario_id": usuario["_id"], "estado_solicitud": "aprobado", "razon_social": "Lubricentro San Martín"}
+    )
 
     respuesta = login()
 
     assert respuesta.status_code == 200
     assert respuesta.json()["rol"] == "taller"
+    assert respuesta.json()["razon_social"] == "Lubricentro San Martín"
 
 
 def test_taller_con_contrasena_incorrecta_recibe_el_mensaje_generico(login, usuarios, talleres):

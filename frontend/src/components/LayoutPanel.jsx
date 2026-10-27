@@ -7,8 +7,13 @@ import './LayoutPanel.css'
 
 const NOMBRE_ROL = { propietario: 'Propietario', taller: 'Taller verificado', administrador: 'Administrador' }
 
-// "Lucía" + "Fernández" → "LF". Las sesiones anteriores sin apellido usan las dos primeras letras.
-function iniciales({ nombre, apellido }) {
+// "Lucía" + "Fernández" → "LF". Un taller usa las dos últimas palabras de su razón social:
+// "Lubricentro San Martín" → "SM". Las sesiones anteriores sin apellido usan las dos primeras letras.
+function iniciales({ nombre, apellido, razon_social: razonSocial }) {
+  if (razonSocial) {
+    const palabras = razonSocial.split(/\s+/).filter(Boolean)
+    return palabras.slice(-2).map((palabra) => palabra[0]).join('').toUpperCase()
+  }
   return (apellido ? nombre[0] + apellido[0] : nombre.slice(0, 2)).toUpperCase()
 }
 
@@ -31,7 +36,7 @@ function LayoutPanel({ enlaces, children }) {
     navigate('/login', { replace: true })
   }
 
-  const nombreCompleto = [sesion.nombre, sesion.apellido].filter(Boolean).join(' ')
+  const nombreVisible = sesion.razon_social ?? [sesion.nombre, sesion.apellido].filter(Boolean).join(' ')
   const hayPendientes = enlaces.some((enlace) => enlace.insignia > 0)
 
   return (
@@ -74,7 +79,7 @@ function LayoutPanel({ enlaces, children }) {
               {iniciales(sesion)}
             </span>
             <div>
-              <strong>{nombreCompleto}</strong>
+              <strong>{nombreVisible}</strong>
               <span>{NOMBRE_ROL[sesion.rol]}</span>
             </div>
           </div>

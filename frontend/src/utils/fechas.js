@@ -22,6 +22,11 @@ export function formatearHora(iso) {
   return FORMATO_HORA.format(new Date(iso))
 }
 
+// Fecha de hoy en Argentina como "aaaa-mm-dd" (el formato de <input type="date">).
+export function hoyEnArgentina() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: ZONA }).format(new Date())
+}
+
 // Tiempo que falta hasta `iso`: "23 h 41 min", "41 min" o "menos de 1 min".
 export function tiempoRestante(iso, ahora = Date.now()) {
   const minutos = Math.floor((new Date(iso) - ahora) / 60000)

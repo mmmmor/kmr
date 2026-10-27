@@ -7,7 +7,8 @@ import Inicio from './pages/publico/Inicio.jsx'
 import Login from './pages/publico/Login.jsx'
 import RecuperarContrasena from './pages/publico/RecuperarContrasena.jsx'
 import Registro from './pages/publico/Registro.jsx'
-import InicioTaller from './pages/taller/Inicio.jsx'
+import RegistrarIntervencion from './pages/taller/RegistrarIntervencion.jsx'
+import RegistrosRealizados from './pages/taller/RegistrosRealizados.jsx'
 
 function App() {
   return (
@@ -22,7 +23,8 @@ function App() {
         <Route path="/propietario/codigo" element={<CodigoAutorizacion />} />
       </Route>
       <Route element={<RutaProtegida rol="taller" />}>
-        <Route path="/taller" element={<InicioTaller />} />
+        <Route path="/taller" element={<RegistrarIntervencion />} />
+        <Route path="/taller/registros" element={<RegistrosRealizados />} />
       </Route>
       <Route element={<RutaProtegida rol="administrador" />}>
         <Route path="/admin" element={<Solicitudes />} />

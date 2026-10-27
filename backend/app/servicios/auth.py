@@ -80,18 +80,21 @@ async def iniciar_sesion(
         await usuarios.reiniciar_intentos(usuario["_id"])
 
     rol = Rol(usuario["rol"])
+    razon_social = None
     if rol is Rol.TALLER:
-        await _verificar_taller_aprobado(usuario["_id"], talleres)
+        razon_social = (await _verificar_taller_aprobado(usuario["_id"], talleres))["razon_social"]
 
     return SesionSalida(
         token=crear_token(str(usuario["_id"]), rol),
         rol=rol,
         nombre=usuario["nombre"],
         apellido=usuario["apellido"],
+        razon_social=razon_social,
     )
 
 
-async def _verificar_taller_aprobado(usuario_id, talleres: RepositorioTalleres) -> None:
+async def _verificar_taller_aprobado(usuario_id, talleres: RepositorioTalleres) -> dict:
+    """Devuelve el taller si está aprobado; si no, lanza ErrorLogin con su estado o el motivo del rechazo."""
     taller = await talleres.buscar_por_usuario(usuario_id)
     estado = EstadoSolicitud(taller["estado_solicitud"]) if taller else EstadoSolicitud.PENDIENTE
     if estado is EstadoSolicitud.PENDIENTE:
@@ -105,6 +108,7 @@ async def _verificar_taller_aprobado(usuario_id, talleres: RepositorioTalleres) 
             "taller_rechazado",
             f"Tu solicitud de alta como taller fue rechazada. Motivo: {taller.get('motivo_rechazo')}",
         )
+    return taller
 
 
 def _mensaje_bloqueo(hasta: datetime, ahora: datetime) -> str:

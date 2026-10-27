@@ -48,6 +48,7 @@ class SesionSalida(BaseModel):
     rol: Rol
     nombre: str
     apellido: str
+    razon_social: str | None = None  # solo talleres: el panel muestra el establecimiento
 
 
 class UsuarioSalida(BaseModel):
