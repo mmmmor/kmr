@@ -1,3 +1,5 @@
+import { leerSesion } from '../auth/sesion.js'
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 // Error de la API con el mensaje listo para mostrar y, si hay, los errores por campo.
@@ -10,11 +12,16 @@ export class ErrorApi extends Error {
 }
 
 export async function pedir(ruta, { metodo = 'GET', cuerpo } = {}) {
+  const headers = {}
+  if (cuerpo) headers['Content-Type'] = 'application/json'
+  const token = leerSesion()?.token
+  if (token) headers.Authorization = `Bearer ${token}`
+
   let respuesta
   try {
     respuesta = await fetch(`${API_URL}${ruta}`, {
       method: metodo,
-      headers: cuerpo ? { 'Content-Type': 'application/json' } : undefined,
+      headers,
       body: cuerpo ? JSON.stringify(cuerpo) : undefined,
     })
   } catch {

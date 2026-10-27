@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Car, CircleAlert, Store, Wrench } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { registrarPropietario } from '../../api/auth.js'
+import Campo from '../../components/Campo.jsx'
 import LayoutAcceso from '../../components/LayoutAcceso.jsx'
 import '../../components/formulario.css'
 import './Registro.css'
@@ -37,32 +38,6 @@ function PanelRegistro() {
         </div>
       </div>
     </>
-  )
-}
-
-function Campo({ id, etiqueta, error, ayuda, ...props }) {
-  return (
-    <div className={`campo ${error ? 'campo-invalido' : ''}`}>
-      <label htmlFor={id}>{etiqueta}</label>
-      <input
-        id={id}
-        name={id}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error || ayuda ? `${id}-mensaje` : undefined}
-        {...props}
-      />
-      {error ? (
-        <p id={`${id}-mensaje`} className="campo-error">
-          {error}
-        </p>
-      ) : (
-        ayuda && (
-          <p id={`${id}-mensaje`} className="campo-ayuda">
-            {ayuda}
-          </p>
-        )
-      )}
-    </div>
   )
 }
 
