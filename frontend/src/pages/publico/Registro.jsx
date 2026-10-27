@@ -5,6 +5,7 @@ import { registrarPropietario } from '../../api/auth.js'
 import { solicitarAltaTaller } from '../../api/talleres.js'
 import Campo from '../../components/Campo.jsx'
 import LayoutAcceso from '../../components/LayoutAcceso.jsx'
+import { formatearCuit, posicionTrasDigitos, soloDigitos } from '../../utils/cuit.js'
 import '../../components/formulario.css'
 import './Registro.css'
 
@@ -64,6 +65,28 @@ function Registro() {
     const { name, value } = evento.target
     setDatos((anteriores) => ({ ...anteriores, [name]: value }))
     setErrores((anteriores) => ({ ...anteriores, [name]: undefined }))
+  }
+
+  // El CUIT se tipea solo con números: los guiones se agregan solos y el cursor queda donde estaba.
+  function cambiarCuit(evento) {
+    const input = evento.target
+    const anterior = datos.cuit
+    let digitos = soloDigitos(input.value)
+    let digitosAntesDelCursor = soloDigitos(input.value.slice(0, input.selectionStart)).length
+
+    // Si se borró un guion, se borra también el dígito anterior; si no, el borrado quedaría trabado.
+    if (digitos === soloDigitos(anterior) && input.value.length < anterior.length && digitosAntesDelCursor > 0) {
+      digitos = digitos.slice(0, digitosAntesDelCursor - 1) + digitos.slice(digitosAntesDelCursor)
+      digitosAntesDelCursor -= 1
+    }
+
+    const cuit = formatearCuit(digitos)
+    setDatos((anteriores) => ({ ...anteriores, cuit }))
+    setErrores((anteriores) => ({ ...anteriores, cuit: undefined }))
+    requestAnimationFrame(() => {
+      const posicion = posicionTrasDigitos(cuit, Math.min(digitosAntesDelCursor, 11))
+      input.setSelectionRange(posicion, posicion)
+    })
   }
 
   async function enviar(evento) {
@@ -188,9 +211,11 @@ function Registro() {
                 etiqueta="CUIT"
                 className="campo-mono"
                 inputMode="numeric"
+                maxLength={13}
                 placeholder="30-71589234-7"
+                ayuda="Solo números: los guiones se agregan solos."
                 value={datos.cuit}
-                onChange={cambiar}
+                onChange={cambiarCuit}
                 error={errores.cuit}
               />
               <Campo
