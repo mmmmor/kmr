@@ -1,4 +1,9 @@
-import { pedirArchivo } from './cliente.js'
+import { pedir, pedirArchivo } from './cliente.js'
+
+// Corrección vinculada (HU-011): `datos` son los del registro ya corregidos, más el `motivo`.
+export function corregirIntervencion(intervencionId, datos) {
+  return pedir(`/intervenciones/${intervencionId}/correcciones`, { metodo: 'POST', cuerpo: datos })
+}
 
 // Abre el comprobante en otra pestaña. La pestaña se abre antes de la descarga (en el mismo clic)
 // para que el navegador no la bloquee; el archivo necesita el token, por eso no alcanza con un enlace.

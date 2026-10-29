@@ -148,7 +148,7 @@
   border-radius: 14px;
 }
 
-.linea-ver-comprobante {
+.linea-accion {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -163,7 +163,7 @@
   cursor: pointer;
 }
 
-.linea-ver-comprobante:hover {
+.linea-accion:hover {
   background: var(--color-primario-suave);
 }
 

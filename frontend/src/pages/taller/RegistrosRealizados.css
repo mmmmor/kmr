@@ -1,5 +1,7 @@
 .registros-filtros {
-  max-width: 360px;
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 280px);
+  gap: 0 16px;
 }
 
 .registros-vacio {
@@ -69,6 +71,19 @@
   -webkit-box-orient: vertical;
 }
 
+.tabla-registros-intervencion .tabla-registros-vinculo {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.tabla-registros-vinculo svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
 .tabla-registros-intervencion .tabla-registros-alerta {
   display: flex;
   gap: 6px;
@@ -82,13 +97,17 @@
   margin-top: 3px;
 }
 
-.tabla-registros-comprobante {
+.tabla-registros-acciones {
   white-space: nowrap;
+}
+
+.tabla-registros-acciones .boton-texto {
+  display: flex;
 }
 
 @media (max-width: 800px) {
   .registros-filtros {
-    max-width: none;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -127,7 +146,7 @@
     grid-template-areas:
       'dominio fecha'
       'intervencion intervencion'
-      'km comprobante';
+      'km acciones';
     align-items: center;
     gap: 10px 12px;
     padding: 18px 20px;
@@ -160,8 +179,12 @@
     grid-area: km;
   }
 
-  .tabla-registros-comprobante {
-    grid-area: comprobante;
+  .tabla-registros-acciones {
+    grid-area: acciones;
     justify-self: end;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px 12px;
   }
 }

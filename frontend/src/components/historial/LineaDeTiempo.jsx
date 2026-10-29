@@ -1,25 +1,8 @@
-import { CalendarDays, FileText, Link2, ShieldCheck, TriangleAlert, User } from 'lucide-react'
+import { CalendarDays, FilePen, FileText, Link2, ShieldCheck, TriangleAlert, User } from 'lucide-react'
 import { formatearFecha } from '../../utils/fechas.js'
-import { formatearMiles, textoAlertaKilometraje } from '../../utils/intervenciones.js'
+import { formatearMiles, textoAlertaKilometraje, tituloCorreccion } from '../../utils/intervenciones.js'
 import Badge from '../Badge.jsx'
 import './LineaDeTiempo.css'
-
-const NOMBRE_CAMPO = {
-  fecha_intervencion: 'fecha',
-  kilometraje: 'kilometraje',
-  tipo: 'tipo de intervención',
-  descripcion: 'descripción',
-  items: 'insumos',
-  proxima_revision: 'próxima revisión',
-}
-
-// ['kilometraje', 'fecha_intervencion'] → "Corrección de kilometraje y fecha"
-function tituloCorreccion(campos) {
-  const nombres = campos.map((campo) => NOMBRE_CAMPO[campo])
-  if (nombres.length === 0) return 'Corrección'
-  const lista = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1)}`
-  return `Corrección de ${lista}`
-}
 
 // "frenos y tren delantero a los 100.000 km o el 14/10/2026."
 function textoProximaRevision({ detalle, kilometraje, fecha }) {
@@ -43,7 +26,7 @@ function Items({ items }) {
   )
 }
 
-function Registro({ intervencion, alVerComprobante }) {
+function Registro({ intervencion, alVerComprobante, alCorregir }) {
   const { alerta_kilometraje: alerta, corrige_a: corrige, corregido_por: corregidoPor } = intervencion
   const esCorreccion = Boolean(corrige)
   const corregidos = new Set(intervencion.campos_corregidos)
@@ -110,9 +93,15 @@ function Registro({ intervencion, alVerComprobante }) {
           )}
           {intervencion.tiene_comprobante && <Badge Icono={FileText}>Con comprobante de insumos</Badge>}
           {intervencion.tiene_comprobante && alVerComprobante && (
-            <button type="button" className="linea-ver-comprobante" onClick={() => alVerComprobante(intervencion.id)}>
+            <button type="button" className="linea-accion" onClick={() => alVerComprobante(intervencion.id)}>
               <FileText size={14} aria-hidden="true" />
               Ver comprobante
+            </button>
+          )}
+          {alCorregir && (
+            <button type="button" className="linea-accion" onClick={() => alCorregir(intervencion)}>
+              <FilePen size={14} aria-hidden="true" />
+              Corregir
             </button>
           )}
         </div>
@@ -123,11 +112,17 @@ function Registro({ intervencion, alVerComprobante }) {
 
 // Historial de un vehículo, del más reciente al más antiguo (ya viene ordenado de la API).
 // `alVerComprobante(id)`: solo para quien puede descargarlo (el propietario); la consulta pública no lo pasa.
-function LineaDeTiempo({ intervenciones, alVerComprobante }) {
+// `puedeCorregir(intervencion)` y `alCorregir(intervencion)`: el botón "Corregir" de los registros que se pueden corregir.
+function LineaDeTiempo({ intervenciones, alVerComprobante, puedeCorregir, alCorregir }) {
   return (
     <ol className="linea-tiempo">
       {intervenciones.map((intervencion) => (
-        <Registro key={intervencion.id} intervencion={intervencion} alVerComprobante={alVerComprobante} />
+        <Registro
+          key={intervencion.id}
+          intervencion={intervencion}
+          alVerComprobante={alVerComprobante}
+          alCorregir={puedeCorregir?.(intervencion) ? alCorregir : undefined}
+        />
       ))}
     </ol>
   )

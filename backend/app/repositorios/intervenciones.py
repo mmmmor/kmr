@@ -29,6 +29,12 @@ class RepositorioIntervenciones:
     async def buscar(self, intervencion_id: ObjectId) -> dict | None:
         return await self._coleccion.find_one({"_id": intervencion_id})
 
+    async def buscar_correccion(
+        self, intervencion_id: ObjectId, sesion: AsyncClientSession | None = None
+    ) -> dict | None:
+        """La corrección que apunta a ese registro, si tiene una."""
+        return await self._coleccion.find_one({"corrige_a": intervencion_id}, session=sesion)
+
     async def ultima_registrada(self, vehiculo_id: ObjectId, sesion: AsyncClientSession | None = None) -> dict | None:
         """El último registro del vehículo según fecha_registro: el que cierra su cadena de hash.
 

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import { CircleAlert, History, KeyRound, Plus, ShieldAlert, ShieldCheck } from 'lucide-react'
+import { CircleAlert, CircleCheck, History, KeyRound, Plus, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { abrirComprobante } from '../../api/intervenciones.js'
 import { listarVehiculos, obtenerHistorial } from '../../api/vehiculos.js'
 import Badge from '../../components/Badge.jsx'
 import LayoutPanel from '../../components/LayoutPanel.jsx'
+import PanelDeslizable from '../../components/PanelDeslizable.jsx'
 import Patente from '../../components/Patente.jsx'
 import SelectorVehiculo from '../../components/SelectorVehiculo.jsx'
+import FormularioCorreccion from '../../components/historial/FormularioCorreccion.jsx'
 import LineaDeTiempo from '../../components/historial/LineaDeTiempo.jsx'
 import { formatearDominio } from '../../utils/dominio.js'
 import { ENLACES_PROPIETARIO } from './navegacion.js'
@@ -57,7 +59,9 @@ function Historial() {
   const [vehiculos, setVehiculos] = useState([])
   // Datos o error del último vehículo pedido: mientras llega otro, no se muestra el anterior.
   const [historial, setHistorial] = useState({ vehiculoId: null, datos: null, error: '' })
-  const [errorComprobante, setErrorComprobante] = useState('')
+  const [errorAccion, setErrorAccion] = useState('')
+  const [aviso, setAviso] = useState({ vehiculoId: null, texto: '' })
+  const [corrigiendo, setCorrigiendo] = useState(null)
 
   useEffect(() => {
     let vigente = true
@@ -80,17 +84,32 @@ function Historial() {
   }, [vehiculoId])
 
   async function verComprobante(id) {
-    setErrorComprobante('')
+    setErrorAccion('')
     try {
       await abrirComprobante(id)
     } catch (e) {
-      setErrorComprobante(e.message)
+      setErrorAccion(e.message)
     }
   }
 
+  async function alCorregir() {
+    setCorrigiendo(null)
+    setErrorAccion('')
+    setAviso({ vehiculoId, texto: 'Registraste la corrección. El registro original se conserva y quedó vinculado.' })
+    window.scrollTo({ top: 0 })
+    try {
+      setHistorial({ vehiculoId, datos: await obtenerHistorial(vehiculoId), error: '' })
+    } catch (e) {
+      setErrorAccion(e.message)
+    }
+  }
+
+  // El propietario corrige solo sus autorreportadas, y la versión vigente (no una ya corregida).
+  const puedeCorregir = (intervencion) => intervencion.origen === 'propietario' && !intervencion.corregido_por
+
   const actual = historial.vehiculoId === vehiculoId
   const datos = actual ? historial.datos : null
-  const error = (actual && historial.error) || errorComprobante
+  const error = (actual && historial.error) || errorAccion
   const dominio = datos?.vehiculo.dominio ?? vehiculos.find((v) => v.id === vehiculoId)?.dominio
 
   return (
@@ -111,6 +130,12 @@ function Historial() {
         </div>
       )}
 
+      {aviso.vehiculoId === vehiculoId && aviso.texto && (
+        <p className="aviso aviso-exito" role="status">
+          <CircleCheck size={18} aria-hidden="true" />
+          {aviso.texto}
+        </p>
+      )}
       {error && (
         <p className="aviso aviso-error" role="alert">
           <CircleAlert size={18} aria-hidden="true" />
@@ -147,11 +172,33 @@ function Historial() {
                 </span>
               </div>
             ) : (
-              <LineaDeTiempo intervenciones={datos.intervenciones} alVerComprobante={verComprobante} />
+              <LineaDeTiempo
+                intervenciones={datos.intervenciones}
+                alVerComprobante={verComprobante}
+                puedeCorregir={puedeCorregir}
+                alCorregir={(intervencion) => {
+                  setAviso({ vehiculoId: null, texto: '' })
+                  setCorrigiendo(intervencion)
+                }}
+              />
             )}
           </section>
         </>
       )}
+
+      <PanelDeslizable
+        abierto={corrigiendo !== null}
+        titulo="Registrar corrección vinculada"
+        alCerrar={() => setCorrigiendo(null)}
+      >
+        {corrigiendo && (
+          <FormularioCorreccion
+            intervencion={corrigiendo}
+            alCorregir={alCorregir}
+            alCancelar={() => setCorrigiendo(null)}
+          />
+        )}
+      </PanelDeslizable>
     </LayoutPanel>
   )
 }

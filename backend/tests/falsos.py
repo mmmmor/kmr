@@ -188,6 +188,9 @@ class RepositorioIntervencionesFalso:
     async def buscar(self, intervencion_id) -> dict | None:
         return next((i for i in self.intervenciones if i["_id"] == intervencion_id), None)
 
+    async def buscar_correccion(self, intervencion_id, sesion=None) -> dict | None:
+        return next((i for i in self.intervenciones if i.get("corrige_a") == intervencion_id), None)
+
     async def ultima_registrada(self, vehiculo_id, sesion=None) -> dict | None:
         del_vehiculo = [i for i in self.intervenciones if i["vehiculo_id"] == vehiculo_id]
         return max(del_vehiculo, key=lambda i: (i["fecha_registro"], i["_id"]), default=None)

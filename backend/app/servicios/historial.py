@@ -1,4 +1,7 @@
-"""Historial de intervenciones de un vehículo (HU-012): línea de tiempo, correcciones e integridad."""
+"""Historial de intervenciones (HU-012): línea de tiempo, correcciones e integridad.
+
+También arma "Registros realizados" del taller, que muestra los mismos vínculos de corrección.
+"""
 
 from collections import defaultdict
 from datetime import datetime
@@ -52,16 +55,17 @@ def campos_corregidos(correccion: dict, corregido: dict | None) -> list[str]:
     return [campo for campo in CAMPOS_CORREGIBLES if correccion.get(campo) != corregido.get(campo)]
 
 
-async def obtener(
-    vehiculo: dict, intervenciones: RepositorioIntervenciones, talleres: RepositorioTalleres
-) -> HistorialSalida:
-    registros = await intervenciones.listar_por_vehiculo(vehiculo["_id"])  # en el orden de la cadena
-    por_id = {r["_id"]: r for r in registros}
-    referencias = kilometraje.referencias(registros)
-    razon_social = await _razones_sociales(registros, talleres)
+def salidas(
+    registros: list[dict], dominio: dict, razon_social: dict, referencias: dict
+) -> list[IntervencionHistorialSalida]:
+    """Los registros en el orden del historial, con sus vínculos de corrección.
 
+    `dominio` y `razon_social` van por vehiculo_id y taller_id; `referencias`, por _id del registro
+    (la lectura contra la que se validó su kilometraje).
+    """
+    por_id = {r["_id"]: r for r in registros}
     corregido_por = {}
-    for registro in registros:  # en orden de carga: si hubo más de una, queda la última
+    for registro in sorted(registros, key=lambda r: (r["fecha_registro"], r["_id"])):  # si hubo más de una, la última
         if registro.get("corrige_a") in por_id:
             corregido_por[registro["corrige_a"]] = registro
 
@@ -70,11 +74,13 @@ async def obtener(
             return None
         return RegistroVinculado(id=str(registro["_id"]), fecha=fecha_en_historial(registro))
 
-    salidas = []
+    resultado = []
     for registro in ordenar(registros):
-        base = servicio_intervenciones.a_salida(registro, vehiculo["dominio"], referencias.get(registro["_id"]))
+        base = servicio_intervenciones.a_salida(
+            registro, dominio[registro["vehiculo_id"]], referencias.get(registro["_id"])
+        )
         corregido = por_id.get(registro.get("corrige_a"))
-        salidas.append(IntervencionHistorialSalida(
+        resultado.append(IntervencionHistorialSalida(
             **base.model_dump(),
             fecha=fecha_en_historial(registro),
             taller=razon_social.get(registro.get("taller_id")),
@@ -83,11 +89,36 @@ async def obtener(
             motivo_correccion=registro.get("motivo_correccion"),
             campos_corregidos=campos_corregidos(registro, corregido),
         ))
+    return resultado
 
+
+async def obtener(
+    vehiculo: dict, intervenciones: RepositorioIntervenciones, talleres: RepositorioTalleres
+) -> HistorialSalida:
+    """Historial completo de un vehículo para su propietario (HU-012)."""
+    registros = await intervenciones.listar_por_vehiculo(vehiculo["_id"])  # en el orden de la cadena
     return HistorialSalida(
         vehiculo=servicio_vehiculos.a_salida(vehiculo, kilometraje.ultima_lectura(registros)),
         integridad_verificada=verificar_cadena(registros),
-        intervenciones=salidas,
+        intervenciones=salidas(
+            registros,
+            {vehiculo["_id"]: vehiculo["dominio"]},
+            await _razones_sociales(registros, talleres),
+            kilometraje.referencias(registros),
+        ),
+    )
+
+
+async def listar_del_taller(
+    taller: dict, intervenciones: RepositorioIntervenciones
+) -> list[IntervencionHistorialSalida]:
+    """Registros realizados por el taller. Solo él corrige sus registros: las correcciones también están acá."""
+    registros = await intervenciones.listar_por_taller(taller["_id"])
+    return salidas(
+        registros,
+        {r["vehiculo_id"]: r["dominio"] for r in registros},
+        {taller["_id"]: taller["razon_social"]},
+        await servicio_intervenciones.referencias_de_alertas(registros, intervenciones),
     )
 
 
