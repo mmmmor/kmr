@@ -5,22 +5,26 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 from app.core.errores import ErrorDeCampo, validar_json
 from app.core.seguridad import UsuarioSesion, requiere_rol
 from app.esquemas.codigos import CodigoSalida, CodigosVehiculoSalida
+from app.esquemas.historial import HistorialSalida
 from app.esquemas.intervenciones import IntervencionEntrada, IntervencionSalida
 from app.esquemas.vehiculos import VehiculoEntrada, VehiculoSalida
 from app.modelos.usuario import Rol
 from app.repositorios.codigos import RepositorioCodigos
 from app.repositorios.comprobantes import AlmacenComprobantes
 from app.repositorios.intervenciones import RepositorioIntervenciones
+from app.repositorios.talleres import RepositorioTalleres
 from app.repositorios.vehiculos import RepositorioVehiculos
 from app.routers.dependencias import (
     obtener_almacen_comprobantes,
     obtener_repositorio_codigos,
     obtener_repositorio_intervenciones,
+    obtener_repositorio_talleres,
     obtener_repositorio_vehiculos,
     obtener_transaccion,
 )
 from app.routers.intervenciones import leer_comprobante_adjunto
 from app.servicios import codigos as servicio_codigos
+from app.servicios import historial as servicio_historial
 from app.servicios import intervenciones as servicio_intervenciones
 from app.servicios import vehiculos as servicio_vehiculos
 
@@ -31,6 +35,7 @@ Vehiculos = Annotated[RepositorioVehiculos, Depends(obtener_repositorio_vehiculo
 Codigos = Annotated[RepositorioCodigos, Depends(obtener_repositorio_codigos)]
 Intervenciones = Annotated[RepositorioIntervenciones, Depends(obtener_repositorio_intervenciones)]
 Comprobantes = Annotated[AlmacenComprobantes, Depends(obtener_almacen_comprobantes)]
+Talleres = Annotated[RepositorioTalleres, Depends(obtener_repositorio_talleres)]
 
 
 async def obtener_vehiculo_propio(vehiculo_id: str, propietario: Propietario, vehiculos: Vehiculos) -> dict:
@@ -64,6 +69,12 @@ async def mis_vehiculos(
 ) -> list[VehiculoSalida]:
     """Vehículos vinculados a la cuenta del propietario, con su último kilometraje registrado."""
     return await servicio_vehiculos.listar(propietario.id, vehiculos, intervenciones)
+
+
+@router.get("/{vehiculo_id}/historial")
+async def historial(vehiculo: VehiculoPropio, intervenciones: Intervenciones, talleres: Talleres) -> HistorialSalida:
+    """Historial completo del vehículo, del más reciente al más antiguo, con correcciones e integridad (HU-012)."""
+    return await servicio_historial.obtener(vehiculo, intervenciones, talleres)
 
 
 @router.post("/{vehiculo_id}/intervenciones", status_code=status.HTTP_201_CREATED)

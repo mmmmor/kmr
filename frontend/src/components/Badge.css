@@ -10,6 +10,10 @@
   white-space: nowrap;
 }
 
+.badge svg {
+  flex-shrink: 0;
+}
+
 .badge-exito {
   background: var(--color-primario-suave);
   color: var(--color-primario);

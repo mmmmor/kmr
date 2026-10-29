@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router'
 import RutaProtegida from './auth/RutaProtegida.jsx'
 import Solicitudes from './pages/admin/Solicitudes.jsx'
 import CodigoAutorizacion from './pages/propietario/CodigoAutorizacion.jsx'
+import Historial from './pages/propietario/Historial.jsx'
 import IntervencionPropia from './pages/propietario/IntervencionPropia.jsx'
 import MisVehiculos from './pages/propietario/MisVehiculos.jsx'
 import Inicio from './pages/publico/Inicio.jsx'
@@ -21,6 +22,7 @@ function App() {
 
       <Route element={<RutaProtegida rol="propietario" />}>
         <Route path="/propietario" element={<MisVehiculos />} />
+        <Route path="/propietario/vehiculos/:vehiculoId" element={<Historial />} />
         <Route path="/propietario/codigo" element={<CodigoAutorizacion />} />
         <Route path="/propietario/intervencion" element={<IntervencionPropia />} />
       </Route>

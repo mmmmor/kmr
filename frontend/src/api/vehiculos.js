@@ -8,6 +8,11 @@ export function vincularVehiculo({ dominio, marca, modelo, anio }) {
   return pedir('/vehiculos', { metodo: 'POST', cuerpo: { dominio, marca, modelo, anio } })
 }
 
+// Historial completo del vehículo, con correcciones e integridad de la cadena (HU-012).
+export function obtenerHistorial(vehiculoId) {
+  return pedir(`/vehiculos/${vehiculoId}/historial`)
+}
+
 export function listarCodigos(vehiculoId) {
   return pedir(`/vehiculos/${vehiculoId}/codigos`)
 }
