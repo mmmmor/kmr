@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { CircleAlert, CircleCheck, History, KeyRound, Plus, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { abrirComprobante } from '../../api/intervenciones.js'
-import { listarVehiculos, obtenerHistorial } from '../../api/vehiculos.js'
+import { listarVehiculos, obtenerHistorial, obtenerMetricas } from '../../api/vehiculos.js'
 import Badge from '../../components/Badge.jsx'
 import LayoutPanel from '../../components/LayoutPanel.jsx'
 import PanelDeslizable from '../../components/PanelDeslizable.jsx'
@@ -10,10 +10,17 @@ import Patente from '../../components/Patente.jsx'
 import SelectorVehiculo from '../../components/SelectorVehiculo.jsx'
 import FormularioCorreccion from '../../components/historial/FormularioCorreccion.jsx'
 import LineaDeTiempo from '../../components/historial/LineaDeTiempo.jsx'
+import MetricasVehiculo from '../../components/historial/MetricasVehiculo.jsx'
 import { formatearDominio } from '../../utils/dominio.js'
 import { ENLACES_PROPIETARIO } from './navegacion.js'
 import '../../components/formulario.css'
 import './Historial.css'
+
+// El historial y sus métricas se piden juntos: las dos vistas tienen que mostrar los mismos registros.
+async function cargarHistorial(vehiculoId) {
+  const [historial, metricas] = await Promise.all([obtenerHistorial(vehiculoId), obtenerMetricas(vehiculoId)])
+  return { ...historial, metricas }
+}
 
 function EncabezadoVehiculo({ vehiculo, integridadVerificada }) {
   return (
@@ -75,7 +82,7 @@ function Historial() {
 
   useEffect(() => {
     let vigente = true
-    obtenerHistorial(vehiculoId)
+    cargarHistorial(vehiculoId)
       .then((datos) => vigente && setHistorial({ vehiculoId, datos, error: '' }))
       .catch((e) => vigente && setHistorial({ vehiculoId, datos: null, error: e.message }))
     return () => {
@@ -98,7 +105,7 @@ function Historial() {
     setAviso({ vehiculoId, texto: 'Registraste la corrección. El registro original se conserva y quedó vinculado.' })
     window.scrollTo({ top: 0 })
     try {
-      setHistorial({ vehiculoId, datos: await obtenerHistorial(vehiculoId), error: '' })
+      setHistorial({ vehiculoId, datos: await cargarHistorial(vehiculoId), error: '' })
     } catch (e) {
       setErrorAccion(e.message)
     }
@@ -156,6 +163,8 @@ function Historial() {
               fuera del sistema.
             </p>
           )}
+
+          {datos.metricas.servicios > 0 && <MetricasVehiculo metricas={datos.metricas} />}
 
           <section className="historial" aria-labelledby="titulo-historial">
             <div className="historial-titulo">

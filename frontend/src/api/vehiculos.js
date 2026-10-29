@@ -13,6 +13,11 @@ export function obtenerHistorial(vehiculoId) {
   return pedir(`/vehiculos/${vehiculoId}/historial`)
 }
 
+// Frecuencia de mantenimiento, uso estimado y cantidades por tipo y origen (HU-013).
+export function obtenerMetricas(vehiculoId) {
+  return pedir(`/vehiculos/${vehiculoId}/metricas`)
+}
+
 export function listarCodigos(vehiculoId) {
   return pedir(`/vehiculos/${vehiculoId}/codigos`)
 }

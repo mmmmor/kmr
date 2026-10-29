@@ -6,6 +6,7 @@ from app.core.errores import ErrorDeCampo, validar_json
 from app.core.seguridad import UsuarioSesion, requiere_rol
 from app.esquemas.codigos import CodigoSalida, CodigosVehiculoSalida
 from app.esquemas.historial import HistorialSalida
+from app.esquemas.metricas import MetricasSalida
 from app.esquemas.intervenciones import IntervencionEntrada, IntervencionSalida
 from app.esquemas.vehiculos import VehiculoEntrada, VehiculoSalida
 from app.modelos.usuario import Rol
@@ -25,6 +26,7 @@ from app.routers.dependencias import (
 from app.routers.intervenciones import leer_comprobante_adjunto
 from app.servicios import codigos as servicio_codigos
 from app.servicios import historial as servicio_historial
+from app.servicios import metricas as servicio_metricas
 from app.servicios import intervenciones as servicio_intervenciones
 from app.servicios import vehiculos as servicio_vehiculos
 
@@ -75,6 +77,12 @@ async def mis_vehiculos(
 async def historial(vehiculo: VehiculoPropio, intervenciones: Intervenciones, talleres: Talleres) -> HistorialSalida:
     """Historial completo del vehículo, del más reciente al más antiguo, con correcciones e integridad (HU-012)."""
     return await servicio_historial.obtener(vehiculo, intervenciones, talleres)
+
+
+@router.get("/{vehiculo_id}/metricas")
+async def metricas(vehiculo: VehiculoPropio, intervenciones: Intervenciones) -> MetricasSalida:
+    """Frecuencia promedio de mantenimiento, uso estimado y cantidad por tipo y por origen (HU-013)."""
+    return await servicio_metricas.obtener(vehiculo, intervenciones)
 
 
 @router.post("/{vehiculo_id}/intervenciones", status_code=status.HTTP_201_CREATED)
