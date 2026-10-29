@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
+from app.core.config import obtener_settings
 from app.main import app
 from app.routers.dependencias import (
     obtener_repositorio_talleres,
@@ -77,7 +78,8 @@ def test_envia_un_enlace_y_guarda_solo_el_hash_del_token(cliente, repos):
 
     correo = repos.enviador.enviados[0]
     token = _token_enviado(repos)
-    assert "http://localhost:5173/recuperar?token=" in correo.texto
+    # El enlace usa FRONTEND_URL, que puede variar según el backend/.env de cada entorno.
+    assert f"{obtener_settings().frontend_url}/recuperar?token=" in correo.texto
     assert token in correo.html
     [guardado] = repos.tokens.tokens
     assert guardado["token_hash"] == hash_token(token)
