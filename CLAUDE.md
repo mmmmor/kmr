@@ -175,7 +175,12 @@ token_hash, fecha_vencimiento, utilizado: bool
 
 ### Inmutabilidad y correcciones
 - Una intervención **nunca se modifica ni se elimina**. Los repositorios de `intervenciones` solo exponen `insertar` y consultas.
-- En producción, la conexión que escribe `intervenciones` usa un usuario de Atlas con un rol personalizado que solo tiene `find` e `insert` sobre esa colección. El resto de las colecciones usa otro usuario con permisos normales.
+- La API se conecta a Atlas con un único usuario. Ese usuario solo tiene el rol personalizado `kmr_app`, definido en `backend/scripts/rol_app.py`:
+  - sobre `intervenciones` permite solo `find` e `insert` (además de crear la colección y sus índices), así que la base rechaza cualquier modificación o borrado;
+  - sobre el resto de las colecciones da las acciones que usa la API.
+- Es un solo usuario y no dos, porque el registro del taller consume el código y guarda la intervención en la misma transacción, y una transacción no puede repartirse entre dos conexiones.
+- Los tests de integración del CI corren la API con un usuario que tiene solo ese rol, y verifican que MongoDB rechaza modificar o borrar intervenciones.
+- Si la API empieza a usar una colección o una operación nueva, hay que agregarla en `rol_app.py` y en el rol de Atlas.
 - Una corrección es una **nueva intervención** con `corrige_a` apuntando a la original y `motivo_correccion` obligatorio. Conserva el registro previo y su autor.
 - Un taller solo puede corregir intervenciones registradas por él mismo. Un propietario solo puede corregir sus intervenciones autorreportadas. Corregir no requiere un código nuevo.
 - En el historial, la original se muestra marcada como "Corregido por el registro del dd/mm/aaaa" y la corrección como "Corrige el registro del dd/mm/aaaa". Ambas se ven siempre.
@@ -335,7 +340,6 @@ Estilo:
 Backend (`backend/.env.example`):
 ```
 MONGODB_URI=
-MONGODB_URI_INTERVENCIONES=     # usuario con solo find/insert sobre intervenciones
 MONGODB_DB=kmr
 JWT_SECRET=
 JWT_EXPIRA_MINUTOS=120
@@ -393,6 +397,8 @@ Tienen que existir tests para:
 - **Frontend:** Vercel, con `VITE_API_URL` apuntando al backend de Render.
 - **Backend:** Render (Web Service), comando `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 - **Base:** MongoDB Atlas M10 con Cloud Backup activado.
+  - El usuario de `MONGODB_URI` tiene solo el rol personalizado `kmr_app`.
+  - Las acciones por colección se listan con `python -m scripts.rol_app --base kmr`.
 - **Respaldo (regla 3-2-1, RPO 24 h, RTO 4 h):**
   1. Cloud Backup de Atlas: copias diarias (7 días), semanales (4 semanas) y mensuales (12 meses).
   2. `.github/workflows/backup.yml`: todos los días a las 03:00 de Argentina (`cron: "0 6 * * *"` en UTC), `mongodump` con un usuario de solo lectura, compresión, cifrado con GnuPG (AES-256) y subida a un bucket privado de Amazon S3. Secretos en GitHub Actions.
