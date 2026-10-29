@@ -4,12 +4,13 @@ import asyncio
 import json
 import os
 from datetime import timedelta
+from urllib.parse import urlsplit, urlunsplit
 
 import pytest
 from bson import ObjectId
 from fastapi.testclient import TestClient
 from pymongo import AsyncMongoClient, MongoClient
-from pymongo.errors import DuplicateKeyError
+from pymongo.errors import DuplicateKeyError, OperationFailure
 
 from app.core.config import obtener_settings
 from app.core.fechas import hoy_en_argentina
@@ -19,6 +20,7 @@ from app.modelos.usuario import Rol
 from app.repositorios.codigos import RepositorioCodigos
 from app.servicios import codigos as servicio_codigos
 from app.servicios.hash import verificar_cadena
+from scripts import rol_app
 
 URI_TEST = os.environ.get("MONGODB_URI_TEST")
 BASE_TEST = "kmr_test"
@@ -48,9 +50,44 @@ def _propietario_con_vehiculo(cliente):
     return propietario, vehiculo
 
 
+USUARIO_APP = "kmr_app_test"
+NO_AUTORIZADO = 13  # código de error de MongoDB cuando el rol no tiene la acción
+
+
+def _autenticacion_activa(cliente) -> bool:
+    try:
+        seguridad = cliente.admin.command("getCmdLineOpts")["parsed"].get("security", {})
+    except OperationFailure:
+        return False
+    return seguridad.get("authorization") == "enabled" or "keyFile" in seguridad
+
+
+@pytest.fixture(scope="module")
+def uri_rol_app():
+    """Con autenticación activa (en CI), crea el rol de la API y un usuario que solo lo tiene, y devuelve su URI.
+
+    Sin autenticación (un Mongo local de desarrollo) devuelve None: los permisos no se aplicarían.
+    """
+    with MongoClient(URI_TEST) as cliente:
+        if not _autenticacion_activa(cliente):
+            return None
+        admin = cliente.admin
+        for comando, nombre in (("dropUser", USUARIO_APP), ("dropRole", rol_app.NOMBRE)):
+            try:
+                admin.command(comando, nombre)
+            except OperationFailure:
+                pass  # no existía
+        admin.command("createRole", rol_app.NOMBRE, privileges=rol_app.privilegios(BASE_TEST), roles=[])
+        admin.command("createUser", USUARIO_APP, pwd="clave-del-rol-de-prueba", roles=[rol_app.NOMBRE])
+    partes = urlsplit(URI_TEST)
+    servidor = partes.netloc.rsplit("@", 1)[-1]
+    return urlunsplit(partes._replace(netloc=f"{USUARIO_APP}:clave-del-rol-de-prueba@{servidor}"))
+
+
 @pytest.fixture
-def cliente_con_base(monkeypatch):
-    monkeypatch.setenv("MONGODB_URI", URI_TEST)
+def cliente_con_base(monkeypatch, uri_rol_app):
+    # La API corre con el usuario del rol kmr_app cuando se puede: así se prueba que al rol no le falta nada.
+    monkeypatch.setenv("MONGODB_URI", uri_rol_app or URI_TEST)
     monkeypatch.setenv("MONGODB_DB", BASE_TEST)
     obtener_settings.cache_clear()
     with MongoClient(URI_TEST) as cliente_sync:
@@ -301,6 +338,31 @@ def test_recuperacion_de_contrasena_con_mongodb_real(cliente_con_base, monkeypat
         [guardado] = cliente_sync[BASE_TEST]["tokens_recuperacion"].find()
     assert indices["fecha_vencimiento_1"]["expireAfterSeconds"] == 0
     assert guardado["utilizado"] is True and token not in str(guardado)
+
+
+def test_el_rol_de_la_api_no_permite_modificar_ni_borrar_intervenciones(cliente_con_base, uri_rol_app):
+    if uri_rol_app is None:
+        pytest.skip("MongoDB sin autenticación: los permisos del rol no se aplican")
+
+    with MongoClient(uri_rol_app) as cliente:
+        intervenciones = cliente[BASE_TEST]["intervenciones"]
+        intervencion_id = intervenciones.insert_one({"kilometraje": 45000}).inserted_id
+        filtro = {"_id": intervencion_id}
+        intentos = {
+            "update": lambda: intervenciones.update_one(filtro, {"$set": {"kilometraje": 1}}),
+            "replace": lambda: intervenciones.replace_one(filtro, {"kilometraje": 1}),
+            "find_one_and_update": lambda: intervenciones.find_one_and_update(filtro, {"$set": {"kilometraje": 1}}),
+            "delete": lambda: intervenciones.delete_one(filtro),
+            "drop": lambda: intervenciones.drop(),
+        }
+        for operacion, intento in intentos.items():
+            with pytest.raises(OperationFailure) as error:
+                intento()
+            assert error.value.code == NO_AUTORIZADO, operacion
+        assert intervenciones.find_one(filtro)["kilometraje"] == 45000
+
+    with MongoClient(URI_TEST) as cliente_sync:
+        assert cliente_sync[BASE_TEST]["intervenciones"].find_one({"_id": intervencion_id})["kilometraje"] == 45000
 
 
 def test_mongodb_es_replica_set_y_admite_transacciones():

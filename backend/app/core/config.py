@@ -18,7 +18,6 @@ class Settings(BaseSettings):
     )
 
     mongodb_uri: str = "mongodb://localhost:27017"
-    mongodb_uri_intervenciones: str | None = None
     mongodb_db: str = "kmr"
     # Obligatoria: sin clave no se pueden firmar sesiones. 32+ caracteres para HS256.
     jwt_secret: str = Field(min_length=32)

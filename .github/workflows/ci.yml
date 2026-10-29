@@ -20,27 +20,38 @@ jobs:
     defaults:
       run:
         working-directory: backend
-    services:
-      mongodb:
-        # 7.0 y no 8.x: mongod 8 no arranca en kernels Linux 6.19+ (SERVER-121912), que ya usan
-        # algunos runners de GitHub. Atlas no se ve afectado. Volver a 8.x cuando salga la corrección.
-        image: mongo:7.0
-        # Replica set de un nodo: las transacciones de la cadena de hash lo necesitan.
-        command: "--replSet rs0"
-        ports:
-          - 27017:27017
-        # El health check inicia el replica set la primera vez y recién da "healthy"
-        # cuando el nodo es primario; los steps no arrancan hasta ese momento.
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'try { rs.status() } catch (e) { rs.initiate() }; quit(db.hello().isWritablePrimary ? 0 : 1)'"
-          --health-interval 2s
-          --health-timeout 10s
-          --health-retries 30
     env:
-      # Base local del service, sin credenciales.
-      MONGODB_URI_TEST: mongodb://localhost:27017/?directConnection=true
+      # Usuario root del contenedor de abajo (solo existe en el runner). Los tests crean además un
+      # usuario con el rol kmr_app y corren la API con él.
+      MONGODB_URI_TEST: mongodb://root:root@localhost:27017/?directConnection=true&authSource=admin
     steps:
       - uses: actions/checkout@v7
+
+      # Replica set de un nodo (las transacciones lo necesitan) y con autenticación (para que se
+      # apliquen los permisos del rol kmr_app). Con autenticación, el replica set exige un keyFile,
+      # por eso no se usa un service: el archivo tiene que existir antes de arrancar el contenedor.
+      # 7.0 y no 8.x: mongod 8 no arranca en kernels Linux 6.19+ (SERVER-121912), que ya usan
+      # algunos runners de GitHub. Atlas no se ve afectado. Volver a 8.x cuando salga la corrección.
+      - name: Levantar MongoDB
+        working-directory: .
+        run: |
+          openssl rand -base64 756 > mongo-keyfile
+          chmod 400 mongo-keyfile
+          sudo chown 999:999 mongo-keyfile
+          docker run -d --name mongodb -p 27017:27017 \
+            -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=root \
+            -v "$PWD/mongo-keyfile:/etc/mongo-keyfile:ro" \
+            mongo:7.0 --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all
+          for intento in $(seq 1 60); do
+            if docker exec mongodb mongosh -u root -p root --quiet --eval \
+              "try { rs.status() } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] }) }; quit(db.hello().isWritablePrimary ? 0 : 1)"
+            then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs mongodb
+          exit 1
 
       - uses: actions/setup-python@v7
         with:
