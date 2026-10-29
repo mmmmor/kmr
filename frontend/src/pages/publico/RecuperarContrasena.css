@@ -1,0 +1,66 @@
+.recuperar-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: var(--color-primario);
+  text-decoration: none;
+}
+
+.recuperar-tarjeta {
+  padding: 28px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+}
+
+.recuperar-paso {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #eceeea;
+  border-radius: 999px;
+}
+
+.recuperar-tarjeta h1 {
+  margin: 16px 0 8px;
+  font-family: var(--fuente-titulos);
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+/* El paso 2 no tiene texto debajo del título. */
+.recuperar-tarjeta h1 + form,
+.recuperar-tarjeta h1 + .aviso {
+  margin-top: 22px;
+}
+
+.recuperar-texto {
+  margin: 0 0 22px;
+  color: var(--color-texto-suave);
+}
+
+.recuperar-tarjeta form .boton-primario {
+  margin-top: 6px;
+}
+
+.recuperar-tarjeta .aviso a {
+  font-weight: 600;
+  color: inherit;
+}
+
+.recuperar-enviado {
+  margin: 20px 0 0;
+}
+
+@media (max-width: 600px) {
+  .recuperar-tarjeta {
+    padding: 22px 18px;
+  }
+
+  .recuperar-tarjeta h1 {
+    font-size: 24px;
+  }
+}

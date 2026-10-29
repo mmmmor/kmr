@@ -10,3 +10,12 @@ export function registrarPropietario({ nombre, apellido, correo, contrasena }) {
     cuerpo: { nombre, apellido, correo, contrasena },
   })
 }
+
+// Recuperación de contraseña (HU-015): la respuesta es la misma exista o no la cuenta.
+export function recuperarContrasena(correo) {
+  return pedir('/auth/recuperar', { metodo: 'POST', cuerpo: { correo } })
+}
+
+export function restablecerContrasena(token, contrasena) {
+  return pedir('/auth/restablecer', { metodo: 'POST', cuerpo: { token, contrasena } })
+}

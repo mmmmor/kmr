@@ -28,6 +28,10 @@ async def crear_indices(db: AsyncDatabase) -> None:
     await db["intervenciones"].create_index("corrige_a")
     # Cadena de hash lineal: dos registros del mismo vehículo no pueden encadenar sobre el mismo anterior.
     await db["intervenciones"].create_index([("vehiculo_id", 1), ("hash_anterior", 1)], unique=True)
+    await db["tokens_recuperacion"].create_index("token_hash", unique=True)
+    await db["tokens_recuperacion"].create_index("usuario_id")
+    # Los tokens vencidos se borran solos (TTL): ya no sirven para nada.
+    await db["tokens_recuperacion"].create_index("fecha_vencimiento", expireAfterSeconds=0)
 
 
 async def en_transaccion(funcion):

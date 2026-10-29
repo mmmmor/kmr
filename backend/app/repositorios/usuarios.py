@@ -42,6 +42,16 @@ class RepositorioUsuarios:
             {"$set": {"bloqueado_hasta": hasta, "intentos_login_fallidos": 0}},
         )
 
+    async def cambiar_contrasena(
+        self, usuario_id: ObjectId, contrasena_hash: str, sesion: AsyncClientSession | None = None
+    ) -> None:
+        """Nueva contraseña (HU-015). También levanta el bloqueo por intentos fallidos."""
+        await self._coleccion.update_one(
+            {"_id": usuario_id},
+            {"$set": {"contrasena_hash": contrasena_hash, "bloqueado_hasta": None, "intentos_login_fallidos": 0}},
+            session=sesion,
+        )
+
     async def reiniciar_intentos(self, usuario_id: ObjectId) -> None:
         await self._coleccion.update_one(
             {"_id": usuario_id},

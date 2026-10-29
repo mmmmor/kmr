@@ -11,6 +11,7 @@ from app.repositorios.codigos import RepositorioCodigos
 from app.repositorios.comprobantes import AlmacenComprobantes
 from app.repositorios.intervenciones import RepositorioIntervenciones
 from app.repositorios.talleres import RepositorioTalleres
+from app.repositorios.tokens import RepositorioTokensRecuperacion
 from app.repositorios.usuarios import RepositorioUsuarios
 from app.repositorios.vehiculos import RepositorioVehiculos
 
@@ -49,6 +50,12 @@ def obtener_almacen_comprobantes(
     db: Annotated[AsyncDatabase, Depends(obtener_db)],
 ) -> AlmacenComprobantes:
     return AlmacenComprobantes(db)
+
+
+def obtener_repositorio_tokens(
+    db: Annotated[AsyncDatabase, Depends(obtener_db)],
+) -> RepositorioTokensRecuperacion:
+    return RepositorioTokensRecuperacion(db)
 
 
 def obtener_transaccion():
