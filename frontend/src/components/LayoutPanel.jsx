@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LogOut, Menu, X } from 'lucide-react'
-import { NavLink, useNavigate } from 'react-router'
+import { NavLink, useLocation, useNavigate } from 'react-router'
 import { useSesion } from '../auth/contexto.js'
 import Logo from './Logo.jsx'
 import './LayoutPanel.css'
@@ -18,10 +18,12 @@ function iniciales({ nombre, apellido, razon_social: razonSocial }) {
 }
 
 // Pantallas con sesión: barra lateral en escritorio; en el celular, barra superior con menú.
-// `enlaces`: [{ a, texto, Icono, insignia? }]
+// `enlaces`: [{ a, texto, Icono, insignia?, tambien? }]; `tambien`: prefijos de otras rutas de la sección
+// (por ejemplo, el historial de un vehículo es parte de Mis vehículos).
 function LayoutPanel({ enlaces, children }) {
   const { sesion, cerrar } = useSesion()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   useEffect(() => {
@@ -62,8 +64,16 @@ function LayoutPanel({ enlaces, children }) {
 
         <div id="panel-menu" className="panel-menu">
           <nav className="panel-nav" aria-label="Secciones">
-            {enlaces.map(({ a, texto, Icono, insignia }) => (
-              <NavLink key={a} to={a} end className="panel-nav-enlace" onClick={() => setMenuAbierto(false)}>
+            {enlaces.map(({ a, texto, Icono, insignia, tambien = [] }) => (
+              <NavLink
+                key={a}
+                to={a}
+                end
+                className={({ isActive }) =>
+                  `panel-nav-enlace ${isActive || tambien.some((ruta) => pathname.startsWith(ruta)) ? 'active' : ''}`
+                }
+                onClick={() => setMenuAbierto(false)}
+              >
                 <Icono size={20} aria-hidden="true" />
                 <span>{texto}</span>
                 {insignia > 0 && (

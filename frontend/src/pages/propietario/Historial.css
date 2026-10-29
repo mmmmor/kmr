@@ -1,0 +1,153 @@
+.migas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 15px;
+  color: var(--color-texto-suave);
+}
+
+.migas a {
+  color: var(--color-primario);
+}
+
+/* El selector de vehículos (si hay más de uno) va arriba del encabezado. */
+.historial-selector {
+  margin-bottom: 20px;
+}
+
+.historial-cargando {
+  color: var(--color-texto-suave);
+}
+
+/* --- Encabezado del vehículo --- */
+
+.historial-vehiculo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px 28px;
+  margin: 0 0 28px;
+  padding: 26px 28px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+}
+
+.historial-vehiculo-datos {
+  flex: 1;
+  min-width: 220px;
+}
+
+.historial-vehiculo-datos h1 {
+  margin: 0;
+  font-family: var(--fuente-titulos);
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.historial-vehiculo-detalle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 6px;
+  color: var(--color-texto-suave);
+}
+
+.historial-vehiculo-acciones {
+  display: flex;
+  gap: 12px;
+}
+
+.historial-vehiculo-acciones > * {
+  padding: 13px 20px;
+}
+
+.texto-movil {
+  display: none;
+}
+
+/* --- Historial --- */
+
+.historial-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin-bottom: 18px;
+}
+
+.historial-titulo h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.historial-titulo span {
+  font-size: 15px;
+  color: var(--color-texto-suave);
+}
+
+.historial-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--color-texto-suave);
+  background: var(--color-superficie);
+  border: 1px dashed var(--color-borde-fuerte);
+  border-radius: 18px;
+}
+
+.historial-vacio p {
+  margin: 0;
+  font-size: 17px;
+  color: var(--color-texto);
+}
+
+.historial-vacio span {
+  max-width: 460px;
+}
+
+@media (max-width: 800px) {
+  .historial-vehiculo {
+    flex-direction: column;
+    gap: 14px;
+    padding: 24px 20px;
+    text-align: center;
+  }
+
+  .historial-vehiculo-datos {
+    min-width: 0;
+  }
+
+  .historial-vehiculo-datos h1 {
+    font-size: 24px;
+  }
+
+  .historial-vehiculo-detalle {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .historial-vehiculo-acciones {
+    align-self: stretch;
+  }
+
+  .historial-vehiculo-acciones > * {
+    flex: 1;
+    padding: 13px 12px;
+  }
+
+  .texto-escritorio {
+    display: none;
+  }
+
+  .texto-movil {
+    display: inline;
+  }
+}
