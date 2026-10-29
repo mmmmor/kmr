@@ -43,6 +43,33 @@ class LoginEntrada(BaseModel):
         return correo.lower()
 
 
+class RecuperarEntrada(BaseModel):
+    correo: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=254)]
+
+    @field_validator("correo")
+    @classmethod
+    def normalizar_correo(cls, correo: str) -> str:
+        if not PATRON_CORREO.match(correo):
+            raise ValueError("Ingresá un correo electrónico válido.")
+        return correo.lower()
+
+
+class RestablecerEntrada(BaseModel):
+    token: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+    contrasena: Annotated[str, StringConstraints(min_length=1)]
+
+    @field_validator("contrasena")
+    @classmethod
+    def validar_contrasena(cls, contrasena: str) -> str:
+        if error := validar_politica_contrasena(contrasena):
+            raise ValueError(error)
+        return contrasena
+
+
+class MensajeSalida(BaseModel):
+    mensaje: str
+
+
 class SesionSalida(BaseModel):
     token: str
     rol: Rol

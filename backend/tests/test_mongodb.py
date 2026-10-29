@@ -277,6 +277,32 @@ def test_registro_del_taller_con_mongodb_real(cliente_con_base):
     assert [(r["kilometraje"], r["dominio"]) for r in registros] == [(100210, "AE123CD"), (98450, "AE123CD")]
 
 
+def test_recuperacion_de_contrasena_con_mongodb_real(cliente_con_base, monkeypatch):
+    from app.servicios import recuperacion
+
+    enviados = []
+
+    async def guardar(enviador, correo):
+        enviados.append(correo)
+
+    monkeypatch.setattr(recuperacion, "enviar", guardar)
+    datos = {"nombre": "Diego", "apellido": "Paz", "correo": "diego@correo.com", "contrasena": "Clave1234"}
+    cliente_con_base.post("/api/auth/registro", json=datos)
+
+    cliente_con_base.post("/api/auth/recuperar", json={"correo": "diego@correo.com"})
+    token = enviados[0].texto.split("token=")[1].split()[0]
+    primero = cliente_con_base.post("/api/auth/restablecer", json={"token": token, "contrasena": "Nueva1234"})
+    segundo = cliente_con_base.post("/api/auth/restablecer", json={"token": token, "contrasena": "Otra12345"})
+    login = cliente_con_base.post("/api/auth/login", json={"correo": "diego@correo.com", "contrasena": "Nueva1234"})
+
+    assert (primero.status_code, segundo.status_code, login.status_code) == (200, 400, 200)
+    with MongoClient(URI_TEST) as cliente_sync:
+        indices = cliente_sync[BASE_TEST]["tokens_recuperacion"].index_information()
+        [guardado] = cliente_sync[BASE_TEST]["tokens_recuperacion"].find()
+    assert indices["fecha_vencimiento_1"]["expireAfterSeconds"] == 0
+    assert guardado["utilizado"] is True and token not in str(guardado)
+
+
 def test_mongodb_es_replica_set_y_admite_transacciones():
     with MongoClient(URI_TEST, serverSelectionTimeoutMS=5000) as cliente:
         assert cliente.admin.command("hello").get("setName"), "MongoDB no corre como replica set"

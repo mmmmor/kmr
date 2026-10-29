@@ -37,6 +37,11 @@ class RepositorioUsuariosFalso:
     async def reiniciar_intentos(self, usuario_id) -> None:
         self._por_id(usuario_id).update(bloqueado_hasta=None, intentos_login_fallidos=0)
 
+    async def cambiar_contrasena(self, usuario_id, contrasena_hash: str, sesion=None) -> None:
+        self._por_id(usuario_id).update(
+            contrasena_hash=contrasena_hash, bloqueado_hasta=None, intentos_login_fallidos=0
+        )
+
     def agregar(self, correo: str, contrasena: str, rol: str = "propietario", nombre: str = "Diego") -> dict:
         """Atajo para preparar un usuario ya registrado."""
         usuario = {
@@ -239,3 +244,33 @@ class TransaccionFalsa:
             for repo, copia in zip(self.repositorios, copias):
                 vars(repo).update(copia)
             raise
+
+
+class RepositorioTokensFalso:
+    def __init__(self):
+        self.tokens: list[dict] = []
+
+    async def insertar(self, token: dict) -> None:
+        self.tokens.append({"_id": ObjectId(), **token})
+
+    async def invalidar_vigentes(self, usuario_id) -> None:
+        for token in self.tokens:
+            if token["usuario_id"] == usuario_id:
+                token["utilizado"] = True
+
+    async def consumir(self, token_hash: str, ahora, sesion=None) -> dict | None:
+        for token in self.tokens:
+            if token["token_hash"] == token_hash and not token["utilizado"] and token["fecha_vencimiento"] > ahora:
+                token["utilizado"] = True
+                return dict(token)
+        return None
+
+
+class EnviadorFalso:
+    """Guarda los correos en lugar de enviarlos."""
+
+    def __init__(self):
+        self.enviados = []
+
+    async def enviar(self, correo) -> None:
+        self.enviados.append(correo)
