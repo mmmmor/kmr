@@ -321,7 +321,9 @@ Basarse en `docs/mockups/`. Pantallas:
 
 Estilo:
 - Fondo `#F5F7F2`, tarjetas blancas con borde suave y esquinas redondeadas, color primario verde `#1F6B45`, alertas de inconsistencia en ámbar.
-- Patentes dibujadas como placa (Mercosur con franja azul "REPÚBLICA ARGENTINA").
+- Patentes dibujadas como placa:
+  - Mercosur (`AA 111 AA`): franja azul "REPÚBLICA ARGENTINA".
+  - Modelo anterior (`AAA 111`): chapa clara con el escudo arriba a la izquierda, "ARGENTINA" en celeste, ranuras de tornillos arriba y abajo, y un panel negro con caracteres blancos en relieve.
 - Kilometrajes y códigos en tipografía monoespaciada.
 - El historial es una línea de tiempo (del más reciente al más antiguo) con badges: "Taller verificado · {razón social}", "Autorreportado", "Inconsistencia", "Corrección", "Corrige el registro del …".
 - Responsive: tiene que usarse bien desde el celular, porque los talleres cargan desde ahí.
