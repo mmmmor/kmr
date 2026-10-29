@@ -18,6 +18,11 @@ export function obtenerMetricas(vehiculoId) {
   return pedir(`/vehiculos/${vehiculoId}/metricas`)
 }
 
+// Próximas revisiones cercanas o vencidas (HU-014).
+export function obtenerAlertas(vehiculoId) {
+  return pedir(`/vehiculos/${vehiculoId}/alertas`)
+}
+
 export function listarCodigos(vehiculoId) {
   return pedir(`/vehiculos/${vehiculoId}/codigos`)
 }

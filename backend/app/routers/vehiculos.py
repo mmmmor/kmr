@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 
 from app.core.errores import ErrorDeCampo, validar_json
 from app.core.seguridad import UsuarioSesion, requiere_rol
+from app.esquemas.alertas import AlertasSalida
 from app.esquemas.codigos import CodigoSalida, CodigosVehiculoSalida
 from app.esquemas.historial import HistorialSalida
 from app.esquemas.metricas import MetricasSalida
@@ -24,6 +25,7 @@ from app.routers.dependencias import (
     obtener_transaccion,
 )
 from app.routers.intervenciones import leer_comprobante_adjunto
+from app.servicios import alertas as servicio_alertas
 from app.servicios import codigos as servicio_codigos
 from app.servicios import historial as servicio_historial
 from app.servicios import metricas as servicio_metricas
@@ -83,6 +85,12 @@ async def historial(vehiculo: VehiculoPropio, intervenciones: Intervenciones, ta
 async def metricas(vehiculo: VehiculoPropio, intervenciones: Intervenciones) -> MetricasSalida:
     """Frecuencia promedio de mantenimiento, uso estimado y cantidad por tipo y por origen (HU-013)."""
     return await servicio_metricas.obtener(vehiculo, intervenciones)
+
+
+@router.get("/{vehiculo_id}/alertas")
+async def alertas(vehiculo: VehiculoPropio, intervenciones: Intervenciones, talleres: Talleres) -> AlertasSalida:
+    """Próximas revisiones cercanas o vencidas, según la fecha y el último kilometraje (HU-014)."""
+    return await servicio_alertas.obtener(vehiculo, intervenciones, talleres)
 
 
 @router.post("/{vehiculo_id}/intervenciones", status_code=status.HTTP_201_CREATED)

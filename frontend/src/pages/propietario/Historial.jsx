@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { CircleAlert, CircleCheck, History, KeyRound, Plus, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { abrirComprobante } from '../../api/intervenciones.js'
-import { listarVehiculos, obtenerHistorial, obtenerMetricas } from '../../api/vehiculos.js'
+import { listarVehiculos, obtenerAlertas, obtenerHistorial, obtenerMetricas } from '../../api/vehiculos.js'
 import Badge from '../../components/Badge.jsx'
 import LayoutPanel from '../../components/LayoutPanel.jsx'
 import PanelDeslizable from '../../components/PanelDeslizable.jsx'
 import Patente from '../../components/Patente.jsx'
 import SelectorVehiculo from '../../components/SelectorVehiculo.jsx'
+import AlertasServicio from '../../components/historial/AlertasServicio.jsx'
 import FormularioCorreccion from '../../components/historial/FormularioCorreccion.jsx'
 import LineaDeTiempo from '../../components/historial/LineaDeTiempo.jsx'
 import MetricasVehiculo from '../../components/historial/MetricasVehiculo.jsx'
@@ -16,10 +17,14 @@ import { ENLACES_PROPIETARIO } from './navegacion.js'
 import '../../components/formulario.css'
 import './Historial.css'
 
-// El historial y sus métricas se piden juntos: las dos vistas tienen que mostrar los mismos registros.
+// El historial, sus métricas y sus alertas se piden juntos: tienen que mostrar los mismos registros.
 async function cargarHistorial(vehiculoId) {
-  const [historial, metricas] = await Promise.all([obtenerHistorial(vehiculoId), obtenerMetricas(vehiculoId)])
-  return { ...historial, metricas }
+  const [historial, metricas, { alertas }] = await Promise.all([
+    obtenerHistorial(vehiculoId),
+    obtenerMetricas(vehiculoId),
+    obtenerAlertas(vehiculoId),
+  ])
+  return { ...historial, metricas, alertas }
 }
 
 function EncabezadoVehiculo({ vehiculo, integridadVerificada }) {
@@ -164,6 +169,7 @@ function Historial() {
             </p>
           )}
 
+          {datos.alertas.length > 0 && <AlertasServicio alertas={datos.alertas} />}
           {datos.metricas.servicios > 0 && <MetricasVehiculo metricas={datos.metricas} />}
 
           <section className="historial" aria-labelledby="titulo-historial">
