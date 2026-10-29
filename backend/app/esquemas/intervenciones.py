@@ -123,6 +123,12 @@ class IntervencionEntrada(BaseModel):
         return proxima
 
 
+class CorreccionEntrada(IntervencionEntrada):
+    """Corrección vinculada (HU-011): los datos completos del registro ya corregidos y el motivo."""
+
+    motivo: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+
+
 # --- Taller (HU-007) ---
 
 

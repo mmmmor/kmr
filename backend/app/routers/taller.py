@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, s
 
 from app.core.errores import ErrorDeCampo, validar_json
 from app.core.seguridad import UsuarioSesion, requiere_rol
+from app.esquemas.historial import IntervencionHistorialSalida
 from app.esquemas.intervenciones import (
     AutorizacionEntrada,
     AutorizacionSalida,
@@ -29,6 +30,7 @@ from app.routers.dependencias import (
     obtener_transaccion,
 )
 from app.routers.intervenciones import leer_comprobante_adjunto
+from app.servicios import historial as servicio_historial
 from app.servicios import intervenciones as servicio_intervenciones
 from app.servicios.codigos import MENSAJE_CODIGO_INVALIDO, CodigoInvalido
 
@@ -96,9 +98,11 @@ async def registrar_intervencion(
 
 
 @router.get("/intervenciones")
-async def registros_realizados(taller: TallerAprobado, intervenciones: Intervenciones) -> list[IntervencionSalida]:
+async def registros_realizados(
+    taller: TallerAprobado, intervenciones: Intervenciones
+) -> list[IntervencionHistorialSalida]:
     """Intervenciones registradas por el taller, de la más reciente a la más antigua."""
-    return await servicio_intervenciones.listar_del_taller(taller, intervenciones)
+    return await servicio_historial.listar_del_taller(taller, intervenciones)
 
 
 def _codigo_invalido() -> ErrorDeCampo:

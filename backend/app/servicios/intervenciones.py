@@ -203,20 +203,14 @@ async def registrar_por_taller(
     return await salida_registrada(documento, vehiculo["dominio"], intervenciones)
 
 
-async def listar_del_taller(taller: dict, intervenciones: RepositorioIntervenciones) -> list[IntervencionSalida]:
-    registros = await intervenciones.listar_por_taller(taller["_id"])
-    lecturas = await _referencias_de_alertas(registros, intervenciones)
-    return [a_salida(i, i["dominio"], lecturas.get(i["_id"])) for i in registros]
-
-
 async def salida_registrada(
     documento: dict, dominio: str, intervenciones: RepositorioIntervenciones
 ) -> IntervencionSalida:
-    lecturas = await _referencias_de_alertas([documento], intervenciones)
+    lecturas = await referencias_de_alertas([documento], intervenciones)
     return a_salida(documento, dominio, lecturas.get(documento["_id"]))
 
 
-async def _referencias_de_alertas(registros: list[dict], intervenciones: RepositorioIntervenciones) -> dict:
+async def referencias_de_alertas(registros: list[dict], intervenciones: RepositorioIntervenciones) -> dict:
     """La lectura contra la que se comparó cada registro con alerta de kilometraje, por _id.
 
     Solo se leen los vehículos que tienen alguna alerta, que son la excepción.

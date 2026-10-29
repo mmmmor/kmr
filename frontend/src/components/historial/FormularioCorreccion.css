@@ -1,0 +1,85 @@
+.correccion-texto {
+  margin: 0 0 20px;
+  color: var(--color-texto-suave);
+}
+
+.correccion-original {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  background: #f3f5f1;
+  border-radius: 14px;
+}
+
+.correccion-etiqueta {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-texto-suave);
+}
+
+.correccion-original-datos {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.correccion-original-datos strong,
+.correccion-original-fecha {
+  display: block;
+}
+
+.correccion-original-fecha {
+  margin-top: 2px;
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.correccion-original .badge {
+  white-space: normal;
+  border-radius: 14px;
+}
+
+.correccion-valores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.correccion-valores.apilados {
+  grid-template-columns: 1fr;
+}
+
+/* Misma tipografía que las etiquetas de los campos. */
+.correccion-etiqueta-campo {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* El valor registrado no se edita: se muestra como un campo deshabilitado. */
+.correccion-registrado {
+  min-height: 50px;
+  margin: 0;
+  padding: 13px 14px;
+  overflow-wrap: anywhere;
+  color: var(--color-texto-suave);
+  background: #f3f5f1;
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 10px;
+}
+
+.correccion-obligatorio {
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+@media (max-width: 600px) {
+  .correccion-valores {
+    grid-template-columns: 1fr;
+  }
+}

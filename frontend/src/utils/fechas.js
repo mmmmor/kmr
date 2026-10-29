@@ -22,9 +22,16 @@ export function formatearHora(iso) {
   return FORMATO_HORA.format(new Date(iso))
 }
 
+const FORMATO_ISO = new Intl.DateTimeFormat('en-CA', { timeZone: ZONA })
+
 // Fecha de hoy en Argentina como "aaaa-mm-dd" (el formato de <input type="date">).
 export function hoyEnArgentina() {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: ZONA }).format(new Date())
+  return FORMATO_ISO.format(new Date())
+}
+
+// "2026-06-18T03:00:00Z" → "2026-06-18": el día en Argentina, para un <input type="date"> o la API.
+export function fechaEnArgentina(iso) {
+  return FORMATO_ISO.format(new Date(iso))
 }
 
 // Tiempo que falta hasta `iso`: "23 h 41 min", "41 min" o "menos de 1 min".

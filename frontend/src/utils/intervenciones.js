@@ -19,6 +19,23 @@ export const TIPOS_INTERVENCION = [
 
 const MILES = new Intl.NumberFormat('es-AR')
 
+const NOMBRE_CAMPO = {
+  fecha_intervencion: 'fecha',
+  kilometraje: 'kilometraje',
+  tipo: 'tipo de intervención',
+  descripcion: 'descripción',
+  items: 'insumos',
+  proxima_revision: 'próxima revisión',
+}
+
+// ['kilometraje', 'fecha_intervencion'] → "Corrección de kilometraje y fecha"
+export function tituloCorreccion(campos) {
+  const nombres = campos.map((campo) => NOMBRE_CAMPO[campo])
+  if (nombres.length === 0) return 'Corrección'
+  const lista = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1)}`
+  return `Corrección de ${lista}`
+}
+
 // Alerta de kilometraje de una intervención (HU-009), con la lectura contra la que se comparó.
 export function textoAlertaKilometraje(alerta) {
   const anterior = `${formatearMiles(alerta.kilometraje_anterior)} km`
