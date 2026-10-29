@@ -141,6 +141,10 @@
   color: var(--color-error);
 }
 
+.campo-ayuda .ayuda-ambar {
+  color: var(--color-ambar);
+}
+
 .aviso {
   display: flex;
   gap: 10px;
@@ -159,6 +163,11 @@
 .aviso-exito {
   background: var(--color-primario-suave);
   color: var(--color-primario);
+}
+
+.aviso-ambar {
+  background: var(--color-ambar-suave);
+  color: var(--color-ambar);
 }
 
 .aviso-error {
@@ -259,4 +268,9 @@
     grid-template-columns: 1fr;
     gap: 0;
   }
+}
+
+/* Kilometraje con alerta de inconsistencia (HU-009). */
+.km-alerta {
+  color: var(--color-ambar);
 }

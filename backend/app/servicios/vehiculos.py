@@ -6,6 +6,7 @@ from bson.errors import InvalidId
 from app.esquemas.vehiculos import UltimaLectura, VehiculoEntrada, VehiculoSalida
 from app.repositorios.intervenciones import RepositorioIntervenciones
 from app.repositorios.vehiculos import DominioYaVinculado, RepositorioVehiculos
+from app.servicios import kilometraje
 
 
 class VehiculoDeOtroPropietario(Exception):
@@ -51,7 +52,7 @@ async def listar(
     """Vehículos del propietario con su último kilometraje registrado (una consulta por vehículo: son pocos)."""
     salidas = []
     for vehiculo in await vehiculos.listar_por_propietario(ObjectId(propietario_id)):
-        ultima = await intervenciones.ultima_lectura(vehiculo["_id"])
+        ultima = kilometraje.ultima_lectura(await intervenciones.listar_por_vehiculo(vehiculo["_id"]))
         salidas.append(a_salida(vehiculo, ultima))
     return salidas
 
@@ -72,7 +73,7 @@ async def obtener_propio(vehiculo_id: str, propietario_id: str, vehiculos: Repos
 
 
 def a_salida(vehiculo: dict, ultima: dict | None = None) -> VehiculoSalida:
-    """`ultima`: la intervención con la fecha de servicio más reciente, si hay."""
+    """`ultima`: la última lectura válida de kilometraje (ver servicios/kilometraje.py), si hay."""
     return VehiculoSalida(
         id=str(vehiculo["_id"]),
         dominio=vehiculo["dominio"],

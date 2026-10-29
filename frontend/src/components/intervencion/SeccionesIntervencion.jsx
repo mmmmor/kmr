@@ -39,7 +39,16 @@ export function CamposServicio({ formulario, ultimaLectura }) {
 
   let ayudaKilometraje
   if (ultimaLectura) {
-    ayudaKilometraje = `Último registrado: ${formatearMiles(ultimaLectura.kilometraje)} km el ${formatearFecha(ultimaLectura.fecha)}.`
+    const ultimo = `${formatearMiles(ultimaLectura.kilometraje)} km el ${formatearFecha(ultimaLectura.fecha)}`
+    // Se puede registrar igual (HU-009): solo se avisa que va a quedar marcado.
+    ayudaKilometraje =
+      datos.kilometraje !== '' && Number(datos.kilometraje) < ultimaLectura.kilometraje ? (
+        <span className="ayuda-ambar">
+          Es menor al último registrado ({ultimo}): se va a guardar con una alerta de inconsistencia.
+        </span>
+      ) : (
+        `Último registrado: ${ultimo}.`
+      )
   } else if (ultimaLectura === null) {
     ayudaKilometraje = 'Todavía no hay kilometrajes registrados para este vehículo.'
   }

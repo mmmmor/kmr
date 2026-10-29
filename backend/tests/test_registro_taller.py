@@ -376,6 +376,22 @@ def test_registros_realizados_muestra_solo_los_del_taller_del_mas_reciente_al_ma
     assert verificar_cadena(repos.intervenciones.intervenciones), "los tres registros encadenan en el vehículo"
 
 
+def test_registros_realizados_explica_la_alerta_de_kilometraje(cliente, repos):
+    hace_un_mes = hoy_en_argentina() - timedelta(days=30)
+    _registrar(cliente, repos, kilometraje=44870, fecha_intervencion=hace_un_mes.isoformat())
+    repos.codigo = _generar_codigo(repos)
+    _registrar(cliente, repos, kilometraje=4512, tipo="Cambio de aceite y filtros")
+
+    inferior, coherente = cliente.get("/api/taller/intervenciones", headers=repos.headers).json()
+
+    assert inferior["alerta_kilometraje"] == {
+        "tipo": "kilometraje_inferior",
+        "kilometraje_anterior": 44870,
+        "fecha_anterior": inicio_del_dia(hace_un_mes).isoformat().replace("+00:00", "Z"),
+    }
+    assert coherente["alerta_kilometraje"] is None
+
+
 # --- Acceso ---
 
 

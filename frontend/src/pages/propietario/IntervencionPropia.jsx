@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, CircleAlert, CircleCheck, FileText, User } from 'lucide-react'
+import { Check, CircleAlert, CircleCheck, FileText, TriangleAlert, User } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { listarVehiculos, registrarIntervencionPropia } from '../../api/vehiculos.js'
 import Badge from '../../components/Badge.jsx'
@@ -16,7 +16,7 @@ import {
   useFormularioIntervencion,
 } from '../../components/intervencion/useFormularioIntervencion.js'
 import { formatearDominio } from '../../utils/dominio.js'
-import { formatearMiles } from '../../utils/intervenciones.js'
+import { formatearMiles, textoAlertaKilometraje } from '../../utils/intervenciones.js'
 import { ENLACES_PROPIETARIO } from './navegacion.js'
 import '../../components/formulario.css'
 import './IntervencionPropia.css'
@@ -60,6 +60,7 @@ function IntervencionPropia() {
   const [vehiculos, setVehiculos] = useState(null)
   const [error, setError] = useState('')
   const [aviso, setAviso] = useState('')
+  const [alerta, setAlerta] = useState(null)
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
@@ -79,6 +80,7 @@ function IntervencionPropia() {
     evento.preventDefault()
     setError('')
     setAviso('')
+    setAlerta(null)
     if (!formulario.validar()) {
       mostrarPrimerError()
       return
@@ -92,6 +94,7 @@ function IntervencionPropia() {
         `Registraste la intervención en ${formatearDominio(registrada.dominio)} (${registrada.tipo}, ` +
           `${formatearMiles(registrada.kilometraje)} km). Se muestra como autorreportada.`,
       )
+      setAlerta(registrada.alerta_kilometraje)
       setVehiculos(await listarVehiculos())
       window.scrollTo({ top: 0 })
     } catch (e) {
@@ -118,6 +121,15 @@ function IntervencionPropia() {
         <p className="aviso aviso-exito" role="status">
           <CircleCheck size={18} aria-hidden="true" />
           {aviso}
+        </p>
+      )}
+      {alerta && (
+        <p className="aviso aviso-ambar" role="status">
+          <TriangleAlert size={18} aria-hidden="true" />
+          <span>
+            <strong>{textoAlertaKilometraje(alerta)}.</strong> Quedó registrada con una alerta de inconsistencia
+            visible en el historial. Si fue un error de carga, podés registrar una corrección vinculada.
+          </span>
         </p>
       )}
       {error && (

@@ -192,11 +192,7 @@ class RepositorioIntervencionesFalso:
         del_vehiculo = [i for i in self.intervenciones if i["vehiculo_id"] == vehiculo_id]
         return max(del_vehiculo, key=lambda i: (i["fecha_registro"], i["_id"]), default=None)
 
-    async def ultima_lectura(self, vehiculo_id) -> dict | None:
-        del_vehiculo = [i for i in self.intervenciones if i["vehiculo_id"] == vehiculo_id]
-        return max(del_vehiculo, key=lambda i: (i["fecha_intervencion"], i["fecha_registro"]), default=None)
-
-    async def listar_por_vehiculo(self, vehiculo_id) -> list[dict]:
+    async def listar_por_vehiculo(self, vehiculo_id, sesion=None) -> list[dict]:
         del_vehiculo = [i for i in self.intervenciones if i["vehiculo_id"] == vehiculo_id]
         return sorted(del_vehiculo, key=lambda i: (i["fecha_registro"], i["_id"]))
 

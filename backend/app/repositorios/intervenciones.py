@@ -38,15 +38,11 @@ class RepositorioIntervenciones:
             {"vehiculo_id": vehiculo_id}, sort=[("fecha_registro", -1), ("_id", -1)], session=sesion
         )
 
-    async def ultima_lectura(self, vehiculo_id: ObjectId) -> dict | None:
-        """El registro con la fecha de servicio más reciente: su kilometraje es el último registrado."""
-        return await self._coleccion.find_one(
-            {"vehiculo_id": vehiculo_id}, sort=[("fecha_intervencion", -1), ("fecha_registro", -1)]
-        )
-
-    async def listar_por_vehiculo(self, vehiculo_id: ObjectId) -> list[dict]:
+    async def listar_por_vehiculo(self, vehiculo_id: ObjectId, sesion: AsyncClientSession | None = None) -> list[dict]:
         """Registros del vehículo en el orden de la cadena (por fecha de registro)."""
-        cursor = self._coleccion.find({"vehiculo_id": vehiculo_id}).sort([("fecha_registro", 1), ("_id", 1)])
+        cursor = self._coleccion.find({"vehiculo_id": vehiculo_id}, session=sesion).sort(
+            [("fecha_registro", 1), ("_id", 1)]
+        )
         return await cursor.to_list()
 
     async def listar_por_taller(self, taller_id: ObjectId) -> list[dict]:
