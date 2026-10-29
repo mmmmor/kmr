@@ -22,7 +22,9 @@ jobs:
         working-directory: backend
     services:
       mongodb:
-        image: mongo:8.0
+        # 7.0 y no 8.x: mongod 8 no arranca en kernels Linux 6.19+ (SERVER-121912), que ya usan
+        # algunos runners de GitHub. Atlas no se ve afectado. Volver a 8.x cuando salga la corrección.
+        image: mongo:7.0
         # Replica set de un nodo: las transacciones de la cadena de hash lo necesitan.
         command: "--replSet rs0"
         ports:
