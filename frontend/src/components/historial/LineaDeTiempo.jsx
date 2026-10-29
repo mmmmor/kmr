@@ -35,7 +35,7 @@ function Registro({ intervencion, alVerComprobante, alCorregir }) {
   const variante = esCorreccion ? 'correccion' : alerta ? 'alerta' : ''
 
   return (
-    <li className={`linea-registro ${variante}`}>
+    <li id={`registro-${intervencion.id}`} className={`linea-registro ${variante}`}>
       <span className="linea-punto" aria-hidden="true" />
       <article className="linea-tarjeta">
         <div className="linea-encabezado">
