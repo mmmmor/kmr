@@ -1,0 +1,218 @@
+.metricas {
+  margin-bottom: 32px;
+}
+
+.metricas h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.metricas-bajada {
+  margin: 4px 0 16px;
+  font-size: 15px;
+  color: var(--color-texto-suave);
+}
+
+.metricas-datos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 14px;
+}
+
+.metrica {
+  padding: 18px 20px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+}
+
+.metrica dt {
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.metrica dd {
+  margin: 6px 0 0;
+}
+
+.metrica-valor {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.metrica-detalle {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-texto-suave);
+}
+
+.metricas-nota {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--color-texto-suave);
+}
+
+.metricas-graficos {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.metricas-tarjeta {
+  min-width: 0;
+  padding: 20px 22px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+}
+
+.metricas-tarjeta h3,
+.metricas-barras h4 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.metricas-tarjeta .metricas-nota {
+  margin: 10px 0 0;
+}
+
+/* --- Gráfico de kilometraje --- */
+
+.grafico-km {
+  position: relative;
+}
+
+.grafico-km svg {
+  display: block;
+  overflow: visible;
+}
+
+.grafico-grilla {
+  stroke: var(--color-borde);
+  stroke-width: 1;
+}
+
+.grafico-eje {
+  font-family: var(--fuente-mono);
+  font-size: 11px;
+  fill: var(--color-texto-suave);
+}
+
+.grafico-linea {
+  fill: none;
+  stroke: var(--color-primario);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.grafico-punto {
+  fill: var(--color-superficie);
+  stroke: var(--color-primario);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.grafico-punto.activo {
+  fill: var(--color-primario);
+}
+
+.grafico-zona {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.grafico-guia {
+  stroke: var(--color-borde-fuerte);
+  stroke-dasharray: 3 3;
+}
+
+.grafico-tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--color-texto-suave);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgb(27 31 28 / 10%);
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+.grafico-tooltip strong {
+  font-size: 15px;
+  color: var(--color-texto);
+}
+
+/* --- Barras --- */
+
+.metricas-barras + .metricas-barras {
+  margin-top: 20px;
+}
+
+.metricas-barras ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metricas-barras li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  font-size: 15px;
+}
+
+.metricas-barra-cantidad {
+  font-weight: 600;
+}
+
+.metricas-barra-pista {
+  grid-column: 1 / -1;
+  height: 8px;
+  background: #eceeea;
+  border-radius: 4px;
+}
+
+.metricas-barra {
+  display: block;
+  height: 100%;
+  background: var(--color-primario);
+  border-radius: 4px;
+}
+
+.metricas-barra.secundaria {
+  background: #8b938e;
+}
+
+@media (max-width: 1000px) {
+  .metricas-datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metricas-graficos {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .metrica {
+    padding: 14px 16px;
+  }
+
+  .metrica-valor {
+    font-size: 19px;
+  }
+}
