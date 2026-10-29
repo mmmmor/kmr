@@ -1,0 +1,83 @@
+.publico {
+  min-height: 100vh;
+}
+
+.publico-encabezado {
+  background: var(--color-superficie);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.publico-encabezado-contenido {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 14px 32px;
+}
+
+.publico-buscador {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.publico-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-left: auto;
+}
+
+.publico-enlace {
+  color: var(--color-texto-suave);
+  text-decoration: none;
+}
+
+.publico-enlace:hover {
+  color: var(--color-texto);
+}
+
+.publico-nav .boton-primario {
+  padding: 11px 20px;
+}
+
+.publico-contenido {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px 64px;
+}
+
+.publico .texto-movil {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .publico-encabezado-contenido {
+    padding: 12px 16px;
+  }
+
+  /* En el celular el encabezado queda con el logo y "Ingresar"; el resto está en la página. */
+  .publico-buscador,
+  .publico-nav .publico-enlace:not(.publico-ingresar),
+  .publico-nav .boton-primario.publico-crear-cuenta {
+    display: none;
+  }
+
+  .publico-ingresar {
+    font-weight: 600;
+    color: var(--color-primario);
+  }
+
+  .publico .texto-escritorio {
+    display: none;
+  }
+
+  .publico .texto-movil {
+    display: inline;
+  }
+
+  .publico-contenido {
+    padding: 0 16px 48px;
+  }
+}

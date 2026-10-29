@@ -103,7 +103,7 @@ async def obtener(
         intervenciones=salidas(
             registros,
             {vehiculo["_id"]: vehiculo["dominio"]},
-            await _razones_sociales(registros, talleres),
+            await razones_sociales(registros, talleres),
             kilometraje.referencias(registros),
         ),
     )
@@ -122,7 +122,7 @@ async def listar_del_taller(
     )
 
 
-async def _razones_sociales(registros: list[dict], talleres: RepositorioTalleres) -> dict:
+async def razones_sociales(registros: list[dict], talleres: RepositorioTalleres) -> dict:
     """Razón social de cada taller que cargó registros del vehículo (son pocos)."""
     razones = {}
     for taller_id in {r["taller_id"] for r in registros if r.get("taller_id") is not None}:

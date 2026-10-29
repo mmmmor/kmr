@@ -5,6 +5,7 @@ import CodigoAutorizacion from './pages/propietario/CodigoAutorizacion.jsx'
 import Historial from './pages/propietario/Historial.jsx'
 import IntervencionPropia from './pages/propietario/IntervencionPropia.jsx'
 import MisVehiculos from './pages/propietario/MisVehiculos.jsx'
+import ConsultaPublica from './pages/publico/ConsultaPublica.jsx'
 import Inicio from './pages/publico/Inicio.jsx'
 import Login from './pages/publico/Login.jsx'
 import RecuperarContrasena from './pages/publico/RecuperarContrasena.jsx'
@@ -16,6 +17,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Inicio />} />
+      <Route path="/consulta/:dominio" element={<ConsultaPublica />} />
       <Route path="/registro" element={<Registro />} />
       <Route path="/login" element={<Login />} />
       <Route path="/recuperar" element={<RecuperarContrasena />} />

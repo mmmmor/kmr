@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Car, CircleAlert, Clock, Store, Wrench } from 'lucide-react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { registrarPropietario } from '../../api/auth.js'
 import { solicitarAltaTaller } from '../../api/talleres.js'
 import Campo from '../../components/Campo.jsx'
@@ -54,7 +54,8 @@ function PanelRegistro() {
 
 function Registro() {
   const navigate = useNavigate()
-  const [tipo, setTipo] = useState('propietario')
+  const [parametros] = useSearchParams()
+  const [tipo, setTipo] = useState(parametros.get('tipo') === 'taller' ? 'taller' : 'propietario')
   const esTaller = tipo === 'taller'
   const [datos, setDatos] = useState(VACIO)
   const [errores, setErrores] = useState({})

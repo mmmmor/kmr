@@ -1,0 +1,106 @@
+.buscador-caja {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.buscador-caja label {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buscador-caja input {
+  min-width: 0;
+  font: inherit;
+  font-family: var(--fuente-mono);
+  letter-spacing: 0.12em;
+  color: var(--color-texto);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.buscador-caja input::placeholder {
+  color: #9aa29d;
+}
+
+.buscador-caja button {
+  flex-shrink: 0;
+}
+
+.buscador-error {
+  margin: 8px 0 0;
+}
+
+/* --- Inicio: caja grande con sombra --- */
+
+.buscador-grande .buscador-caja {
+  padding: 10px 10px 10px 22px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgb(27 31 28 / 6%);
+}
+
+.buscador-grande input {
+  flex: 1;
+  font-size: 26px;
+}
+
+.buscador-grande button {
+  padding: 15px 26px;
+  font-size: 17px;
+}
+
+.buscador-grande .buscador-error {
+  text-align: left;
+}
+
+.buscador-grande .buscador-caja:focus-within {
+  border-color: var(--color-primario);
+}
+
+/* --- Encabezado del resultado: campo y botón --- */
+
+.buscador-compacto .buscador-caja input {
+  width: 160px;
+  padding: 9px 14px;
+  font-size: 16px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 10px;
+}
+
+.buscador-compacto .buscador-caja input:focus {
+  border-color: var(--color-primario);
+}
+
+.buscador-compacto button {
+  padding: 10px 18px;
+}
+
+.buscador-invalido input {
+  border-color: var(--color-error);
+}
+
+@media (max-width: 600px) {
+  .buscador-grande .buscador-caja {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    text-align: left;
+  }
+
+  .buscador-grande label {
+    width: 100%;
+  }
+
+  .buscador-grande input {
+    flex-basis: 100%;
+    font-size: 24px;
+  }
+
+  .buscador-grande .buscador-caja button {
+    width: 100%;
+  }
+}
