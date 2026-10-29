@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CircleAlert, ClipboardList, FileText } from 'lucide-react'
+import { CircleAlert, ClipboardList, FileText, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
 import { abrirComprobante } from '../../api/intervenciones.js'
 import { listarRegistros } from '../../api/taller.js'
@@ -8,7 +8,7 @@ import LayoutPanel from '../../components/LayoutPanel.jsx'
 import Patente from '../../components/Patente.jsx'
 import { normalizarDominio } from '../../utils/dominio.js'
 import { formatearFecha } from '../../utils/fechas.js'
-import { formatearMiles } from '../../utils/intervenciones.js'
+import { formatearMiles, textoAlertaKilometraje } from '../../utils/intervenciones.js'
 import { ENLACES_TALLER } from './navegacion.js'
 import '../../components/formulario.css'
 import './RegistrosRealizados.css'
@@ -103,9 +103,17 @@ function RegistrosRealizados() {
                     </td>
                     <td className="tabla-registros-intervencion">
                       <strong>{registro.tipo}</strong>
+                      {registro.alerta_kilometraje && (
+                        <span className="tabla-registros-alerta">
+                          <TriangleAlert size={14} aria-hidden="true" />
+                          {textoAlertaKilometraje(registro.alerta_kilometraje)}
+                        </span>
+                      )}
                       {registro.descripcion && <span>{registro.descripcion}</span>}
                     </td>
-                    <td className="tabla-registros-km mono">{formatearMiles(registro.kilometraje)} km</td>
+                    <td className={`tabla-registros-km mono ${registro.alerta_kilometraje ? 'km-alerta' : ''}`}>
+                      {formatearMiles(registro.kilometraje)} km
+                    </td>
                     <td className="tabla-registros-comprobante">
                       {registro.tiene_comprobante && (
                         <button type="button" className="boton-texto" onClick={() => verComprobante(registro.id)}>

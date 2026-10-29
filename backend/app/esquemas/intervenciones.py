@@ -15,7 +15,7 @@ from pydantic import (
 
 from app.core.fechas import hoy_en_argentina
 from app.esquemas.vehiculos import Dominio, UltimaLectura
-from app.modelos.intervencion import TIPOS_INTERVENCION, Origen
+from app.modelos.intervencion import TIPOS_INTERVENCION, AlertaKilometraje, Origen
 
 KM_MAXIMO = 2_000_000
 CANTIDAD_MAXIMA = 9_999
@@ -172,6 +172,14 @@ class ProximaRevisionSalida(BaseModel):
     detalle: str | None
 
 
+class AlertaKilometrajeSalida(BaseModel):
+    """La inconsistencia y la lectura contra la que se comparó: "inferior al último registrado (84.100 km)"."""
+
+    tipo: AlertaKilometraje
+    kilometraje_anterior: int
+    fecha_anterior: datetime
+
+
 class IntervencionSalida(BaseModel):
     id: str
     dominio: str
@@ -183,5 +191,5 @@ class IntervencionSalida(BaseModel):
     items: list[ItemSalida]
     proxima_revision: ProximaRevisionSalida | None
     tiene_comprobante: bool
-    alerta_kilometraje: str | None
+    alerta_kilometraje: AlertaKilometrajeSalida | None
     fecha_registro: datetime

@@ -166,7 +166,7 @@ def test_el_repositorio_de_intervenciones_solo_inserta_y_consulta():
     publicos = {nombre for nombre, _ in inspect.getmembers(RepositorioIntervenciones) if not nombre.startswith("_")}
 
     assert publicos == {
-        "insertar", "buscar", "ultima_registrada", "ultima_lectura", "listar_por_vehiculo", "listar_por_taller",
+        "insertar", "buscar", "ultima_registrada", "listar_por_vehiculo", "listar_por_taller",
     }
     codigo = inspect.getsource(modulo_repositorio)
     for operacion in ("update_one", "update_many", "replace_one", "delete_one", "delete_many", "find_one_and_"):

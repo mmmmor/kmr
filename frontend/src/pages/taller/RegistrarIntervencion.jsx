@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { CircleCheck, Plus } from 'lucide-react'
+import { CircleCheck, Plus, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
 import LayoutPanel from '../../components/LayoutPanel.jsx'
 import Pasos from '../../components/Pasos.jsx'
 import Patente from '../../components/Patente.jsx'
 import { useFormularioIntervencion } from '../../components/intervencion/useFormularioIntervencion.js'
 import { formatearFecha, formatearFechaHora } from '../../utils/fechas.js'
-import { formatearMiles } from '../../utils/intervenciones.js'
+import { formatearMiles, textoAlertaKilometraje } from '../../utils/intervenciones.js'
 import { ENLACES_TALLER } from './navegacion.js'
 import PasoAutorizacion from './PasoAutorizacion.jsx'
 import PasoDatos from './PasoDatos.jsx'
@@ -27,6 +27,16 @@ function PasoConfirmacion({ intervencion, alRegistrarOtra }) {
         Quedó asentada en el historial del vehículo con la identificación de tu taller. No se puede editar ni
         eliminar.
       </p>
+      {intervencion.alerta_kilometraje && (
+        <p className="aviso aviso-ambar confirmacion-alerta" role="status">
+          <TriangleAlert size={18} aria-hidden="true" />
+          <span>
+            <strong>{textoAlertaKilometraje(intervencion.alerta_kilometraje)}.</strong> Quedó registrada con una
+            alerta de inconsistencia visible en el historial. Si fue un error de carga, registrá una corrección
+            vinculada.
+          </span>
+        </p>
+      )}
       <div className="confirmacion-vehiculo">
         <Patente dominio={intervencion.dominio} tamano="chico" />
         <strong>{intervencion.tipo}</strong>
@@ -38,7 +48,9 @@ function PasoConfirmacion({ intervencion, alRegistrarOtra }) {
         </div>
         <div>
           <dt>Kilometraje</dt>
-          <dd className="mono">{formatearMiles(intervencion.kilometraje)} km</dd>
+          <dd className={`mono ${intervencion.alerta_kilometraje ? 'km-alerta' : ''}`}>
+            {formatearMiles(intervencion.kilometraje)} km
+          </dd>
         </div>
         <div>
           <dt>Insumos y trabajos</dt>

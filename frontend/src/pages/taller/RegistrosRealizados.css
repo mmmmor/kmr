@@ -69,6 +69,19 @@
   -webkit-box-orient: vertical;
 }
 
+.tabla-registros-intervencion .tabla-registros-alerta {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--color-ambar);
+}
+
+.tabla-registros-alerta svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
 .tabla-registros-comprobante {
   white-space: nowrap;
 }
@@ -77,8 +90,10 @@
   .registros-filtros {
     max-width: none;
   }
+}
 
-  /* La tabla se convierte en una tarjeta por registro. */
+/* Con la barra lateral, por debajo de ~1100 px la tabla no entra: se convierte en una tarjeta por registro. */
+@media (max-width: 1100px) {
   .tabla-registros,
   .tabla-registros tbody,
   .tabla-registros td {

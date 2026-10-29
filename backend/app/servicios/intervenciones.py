@@ -6,6 +6,7 @@ from bson.errors import InvalidId
 from app.core.fechas import ahora_en_milisegundos, inicio_del_dia
 from app.core.seguridad import UsuarioSesion
 from app.esquemas.intervenciones import (
+    AlertaKilometrajeSalida,
     AutorizacionEntrada,
     AutorizacionSalida,
     IntervencionEntrada,
@@ -23,6 +24,7 @@ from app.repositorios.intervenciones import CadenaModificada, RepositorioInterve
 from app.repositorios.talleres import RepositorioTalleres
 from app.repositorios.vehiculos import RepositorioVehiculos
 from app.servicios import codigos as servicio_codigos
+from app.servicios import kilometraje
 from app.servicios.codigos import CodigoInvalido
 from app.servicios.hash import calcular_hash
 
@@ -61,8 +63,7 @@ def nueva(
             "detalle": proxima.detalle,
         },
         "comprobante_id": None,
-        # La validación del kilometraje (HU-009) llega en el Sprint 3.
-        "alerta_kilometraje": None,
+        "alerta_kilometraje": None,  # se evalúa al insertarla, contra los registros de ese momento
         "corrige_a": None,
         "motivo_correccion": None,
     }
@@ -76,7 +77,8 @@ async def insertar_encadenada(
 ) -> dict:
     """Inserta la intervención al final de la cadena de hash de su vehículo, en una transacción.
 
-    `antes_de_insertar(sesion)` corre dentro de la misma transacción (por ejemplo, consumir el
+    El kilometraje se valida (HU-009) con los registros leídos en la misma transacción, así una
+    carga simultánea no puede quedar comparada contra una lectura vieja. `antes_de_insertar(sesion)` corre dentro de la misma transacción (por ejemplo, consumir el
     código del taller): si la inserción falla, también se deshace. Si una carga simultánea del
     mismo vehículo tomó el mismo hash_anterior, se vuelve a leer el último hash y se reintenta.
     """
@@ -85,8 +87,13 @@ async def insertar_encadenada(
         if antes_de_insertar is not None:
             await antes_de_insertar(sesion)
         ultima = await intervenciones.ultima_registrada(intervencion["vehiculo_id"], sesion=sesion)
+        registros = await intervenciones.listar_por_vehiculo(intervencion["vehiculo_id"], sesion=sesion)
+        referencia = kilometraje.lectura_de_referencia(registros, intervencion)
         documento = {
             **intervencion,
+            "alerta_kilometraje": kilometraje.evaluar(
+                intervencion["kilometraje"], intervencion["fecha_intervencion"], referencia
+            ),
             "fecha_registro": ahora_en_milisegundos(),
             "hash_anterior": ultima["hash"] if ultima else None,
         }
@@ -137,7 +144,7 @@ async def registrar_por_propietario(
     """Intervención autorreportada: sin taller ni código, se muestra como "Autorreportado por el propietario"."""
     intervencion = nueva(datos, vehiculo["_id"], Origen.PROPIETARIO, ObjectId(propietario_id))
     documento = await registrar_con_comprobante(intervencion, comprobante, intervenciones, comprobantes, en_transaccion)
-    return a_salida(documento, vehiculo["dominio"])
+    return await salida_registrada(documento, vehiculo["dominio"], intervenciones)
 
 
 # --- Taller (HU-007) ---
@@ -158,7 +165,7 @@ async def autorizar_taller(
 
 
 async def resumen_autorizado(vehiculo: dict, intervenciones: RepositorioIntervenciones) -> AutorizacionSalida:
-    ultima = await intervenciones.ultima_lectura(vehiculo["_id"])
+    ultima = kilometraje.ultima_lectura(await intervenciones.listar_por_vehiculo(vehiculo["_id"]))
     return AutorizacionSalida(
         dominio=vehiculo["dominio"],
         marca=vehiculo["marca"],
@@ -193,11 +200,31 @@ async def registrar_por_taller(
     documento = await registrar_con_comprobante(
         intervencion, comprobante, intervenciones, comprobantes, en_transaccion, consumir_codigo
     )
-    return a_salida(documento, vehiculo["dominio"])
+    return await salida_registrada(documento, vehiculo["dominio"], intervenciones)
 
 
 async def listar_del_taller(taller: dict, intervenciones: RepositorioIntervenciones) -> list[IntervencionSalida]:
-    return [a_salida(i, i["dominio"]) for i in await intervenciones.listar_por_taller(taller["_id"])]
+    registros = await intervenciones.listar_por_taller(taller["_id"])
+    lecturas = await _referencias_de_alertas(registros, intervenciones)
+    return [a_salida(i, i["dominio"], lecturas.get(i["_id"])) for i in registros]
+
+
+async def salida_registrada(
+    documento: dict, dominio: str, intervenciones: RepositorioIntervenciones
+) -> IntervencionSalida:
+    lecturas = await _referencias_de_alertas([documento], intervenciones)
+    return a_salida(documento, dominio, lecturas.get(documento["_id"]))
+
+
+async def _referencias_de_alertas(registros: list[dict], intervenciones: RepositorioIntervenciones) -> dict:
+    """La lectura contra la que se comparó cada registro con alerta de kilometraje, por _id.
+
+    Solo se leen los vehículos que tienen alguna alerta, que son la excepción.
+    """
+    referencias = {}
+    for vehiculo_id in {r["vehiculo_id"] for r in registros if r.get("alerta_kilometraje")}:
+        referencias |= kilometraje.referencias(await intervenciones.listar_por_vehiculo(vehiculo_id))
+    return referencias
 
 
 # --- Comprobantes ---
@@ -230,8 +257,10 @@ async def leer_comprobante(
     return await comprobantes.leer(intervencion["comprobante_id"])
 
 
-def a_salida(intervencion: dict, dominio: str) -> IntervencionSalida:
+def a_salida(intervencion: dict, dominio: str, referencia: dict | None = None) -> IntervencionSalida:
+    """`referencia`: la lectura contra la que se validó el kilometraje, para explicar la alerta."""
     proxima = intervencion.get("proxima_revision")
+    alerta = intervencion.get("alerta_kilometraje")
     return IntervencionSalida(
         id=str(intervencion["_id"]),
         dominio=dominio,
@@ -243,6 +272,10 @@ def a_salida(intervencion: dict, dominio: str) -> IntervencionSalida:
         items=[ItemSalida(**item) for item in intervencion["items"]],
         proxima_revision=ProximaRevisionSalida(**proxima) if proxima else None,
         tiene_comprobante=intervencion.get("comprobante_id") is not None,
-        alerta_kilometraje=intervencion.get("alerta_kilometraje"),
+        alerta_kilometraje=None if alerta is None or referencia is None else AlertaKilometrajeSalida(
+            tipo=alerta,
+            kilometraje_anterior=referencia["kilometraje"],
+            fecha_anterior=referencia["fecha_intervencion"],
+        ),
         fecha_registro=intervencion["fecha_registro"],
     )

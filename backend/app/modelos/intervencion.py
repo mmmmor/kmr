@@ -6,6 +6,13 @@ class Origen(StrEnum):
     PROPIETARIO = "propietario"
 
 
+class AlertaKilometraje(StrEnum):
+    """Inconsistencia del kilometraje frente a la última lectura válida del vehículo (HU-009)."""
+
+    KILOMETRAJE_INFERIOR = "kilometraje_inferior"
+    INCREMENTO_INCOMPATIBLE = "incremento_incompatible"
+
+
 # Tipos que se pueden elegir al registrar. Las métricas cuentan intervenciones por tipo,
 # por eso es una lista cerrada. El frontend tiene la misma lista (src/utils/intervenciones.js).
 TIPOS_INTERVENCION = (
