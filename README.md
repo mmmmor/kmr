@@ -100,7 +100,6 @@ cd kmr
 cd backend
 py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
-Copy-Item .env.example .env
 uvicorn app.main:app --reload
 ```
 
@@ -120,7 +119,6 @@ cd kmr
 cd backend
 py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
-Copy-Item .env.example .env
 python -m scripts.crear_admin --correo admin@ejemplo.com --nombre Ana --apellido López
 ```
 
@@ -133,7 +131,6 @@ En otra terminal, desde `frontend\`:
 ```powershell
 cd kmr
 cd frontend
-Copy-Item .env.example .env
 npm run dev
 ```
 
