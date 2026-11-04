@@ -76,10 +76,6 @@ La API usa transacciones, que en MongoDB solo funcionan en un replica set. Para 
 Desde `backend\`, con el entorno virtual activado:
 
 ```powershell
-cd kmr
-cd backend
-py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
 Copy-Item .env.example .env
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
@@ -96,10 +92,6 @@ Las demás variables pueden quedar como están. `BREVO_API_KEY` y `CORREO_REMITE
 Levantá la API:
 
 ```powershell
-cd kmr
-cd backend
-py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload
 ```
 
@@ -156,4 +148,3 @@ Para recorrer todos los roles:
 | Errores de CORS en el navegador | `FRONTEND_URL` (backend) y `VITE_API_URL` (frontend) tienen que coincidir con las direcciones reales. Reiniciá la API y el frontend después de cambiarlas. |
 | `ModuleNotFoundError` | El entorno virtual no está activado, o no estás en `backend\`. |
 
-Las reglas de negocio, el modelo de datos y los endpoints están documentados en [CLAUDE.md](CLAUDE.md).
