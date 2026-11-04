@@ -21,9 +21,11 @@ Git, Python y Node se pueden instalar con winget:
 winget install Git.Git Python.Python.3.12 OpenJS.NodeJS.LTS
 ```
 
-Para MongoDB, bajá el instalador `.msi` de la página oficial y dejá marcada la opción **Install MongoDB as a Service**, que viene así por defecto. MongoDB Compass y mongosh no hacen falta.
+Para MongoDB, bajá el instalador `.msi` de la página oficial y dejá marcada la opción **Install MongoDB as a Service**, que viene así por defecto.
 
 Al terminar, cerrá y volvé a abrir PowerShell para que reconozca los programas nuevos.
+
+Para poder ejecutar `Activate.ps1`, corré en PowerShell `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass` y luego se puede continuar.
 
 ## 1. Clonar e instalar
 
@@ -39,13 +41,11 @@ cd ..\frontend
 npm install
 ```
 
-Si PowerShell no deja ejecutar `Activate.ps1`, corré `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` y volvé a intentar.
-
 ## 2. MongoDB local como replica set
 
 La API usa transacciones, que en MongoDB solo funcionan en un replica set. Para convertir la instalación local en un replica set de un nodo:
 
-1. Abrí PowerShell **como administrador**.
+1. Abrí otra terminal de PowerShell **como administrador**.
 2. Abrí el archivo de configuración. El comando lo encuentra sin importar qué versión instalaste:
    ```powershell
    notepad (Resolve-Path "C:\Program Files\MongoDB\Server\*\bin\mongod.cfg")
@@ -61,6 +61,10 @@ La API usa transacciones, que en MongoDB solo funcionan en un replica set. Para 
    ```
 5. Iniciá el replica set. Esto se hace una sola vez y se corre desde `backend\`, con el entorno virtual activado:
    ```powershell
+   cd kmr
+   cd backend
+   py -3.12 -m venv .venv
+   .venv\Scripts\Activate.ps1
    python -c "from pymongo import MongoClient; print(MongoClient(directConnection=True).admin.command('replSetInitiate'))"
    ```
    Tiene que responder `{'ok': 1.0}`.
@@ -72,6 +76,10 @@ La API usa transacciones, que en MongoDB solo funcionan en un replica set. Para 
 Desde `backend\`, con el entorno virtual activado:
 
 ```powershell
+cd kmr
+cd backend
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
 Copy-Item .env.example .env
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
@@ -88,6 +96,11 @@ Las demás variables pueden quedar como están. `BREVO_API_KEY` y `CORREO_REMITE
 Levantá la API:
 
 ```powershell
+cd kmr
+cd backend
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+Copy-Item .env.example .env
 uvicorn app.main:app --reload
 ```
 
@@ -103,6 +116,11 @@ La base y sus índices se crean solos la primera vez.
 El administrador no se registra desde la web. En otra terminal, desde `backend\` y con el entorno virtual activado:
 
 ```powershell
+cd kmr
+cd backend
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+Copy-Item .env.example .env
 python -m scripts.crear_admin --correo admin@ejemplo.com --nombre Ana --apellido López
 ```
 
@@ -113,6 +131,8 @@ El script pide la contraseña dos veces. Tiene que tener entre 8 y 64 caracteres
 En otra terminal, desde `frontend\`:
 
 ```powershell
+cd kmr
+cd frontend
 Copy-Item .env.example .env
 npm run dev
 ```
@@ -127,23 +147,6 @@ Para recorrer todos los roles:
 4. Como propietario, generá un código de autorización.
 5. Como taller, usá el dominio y el código para registrar un servicio.
 6. Sin sesión, buscá el dominio en el inicio para ver la consulta pública.
-
-## Tests y lint
-
-```powershell
-# desde backend\ (con el entorno virtual activado)
-pytest
-
-# desde frontend\
-npm run lint
-npm run build
-```
-
-Los tests contra MongoDB se omiten salvo que definas `MONGODB_URI_TEST`. Usan una base aparte, `kmr_test`, y **la borran** al empezar:
-
-```powershell
-$env:MONGODB_URI_TEST = "mongodb://localhost:27017/?directConnection=true"; pytest
-```
 
 ## Problemas frecuentes
 
