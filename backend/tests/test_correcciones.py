@@ -70,13 +70,14 @@ def _fecha(dias_atras):
     return hoy_en_argentina() - timedelta(days=dias_atras)
 
 
-def _cargar(repos, km, dias_atras, taller=None):
+def _cargar(repos, km, dias_atras, taller=None, proxima_revision=None):
     datos = IntervencionEntrada(
         fecha_intervencion=_fecha(dias_atras),
         kilometraje=km,
         tipo="Frenos",
         descripcion="Cambio de pastillas delanteras.",
         items=[{"descripcion": "Juego de pastillas de freno delanteras", "cantidad": 1}],
+        proxima_revision=proxima_revision,
     )
     intervencion = servicio.nueva(
         datos,
@@ -224,6 +225,30 @@ def test_el_valor_corregido_se_valida_como_en_el_registro(cliente, repos):
 
     assert respuesta.status_code == 422
     assert respuesta.json()["campos"] == {"fecha_intervencion": "La fecha no puede ser posterior a hoy."}
+
+
+def test_el_kilometraje_y_la_proxima_revision_se_corrigen_juntos(cliente, repos):
+    # Un error de tipeo en el kilometraje suele arrastrar el de la próxima revisión.
+    original = _cargar(repos, 54100, 70, taller=repos.taller, proxima_revision={"kilometraje": 64100})
+
+    solo_kilometraje = _corregir(
+        cliente, original, repos.headers_taller, kilometraje=84100, proxima_revision={"kilometraje": 64100}
+    )
+    assert solo_kilometraje.status_code == 422
+    assert solo_kilometraje.json()["campos"] == {
+        "proxima_revision": "El kilometraje de la próxima revisión tiene que ser mayor al del servicio."
+    }
+
+    respuesta = _corregir(
+        cliente, original, repos.headers_taller, kilometraje=84100, proxima_revision={"kilometraje": 94100}
+    )
+
+    assert respuesta.status_code == 201
+    correccion = repos.intervenciones.intervenciones[1]
+    assert (correccion["kilometraje"], correccion["proxima_revision"]["kilometraje"]) == (84100, 94100)
+    historial = cliente.get(f"/api/vehiculos/{repos.vehiculo['_id']}/historial", headers=repos.propietario).json()
+    registro = next(i for i in historial["intervenciones"] if i["corrige_a"])
+    assert registro["campos_corregidos"] == ["kilometraje", "proxima_revision"]
 
 
 def test_sin_cambios_no_hay_nada_que_corregir(cliente, repos):
