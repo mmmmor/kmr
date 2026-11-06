@@ -35,6 +35,13 @@ function datosDelRegistro(intervencion) {
   }
 }
 
+// Un error de tipeo en el kilometraje suele arrastrar el de la próxima revisión: si el registro la tiene
+// por kilometraje, se corrige junto con él. Arranca con la misma diferencia que el kilometraje.
+function proximaSugerida(intervencion, valor) {
+  if (!valor) return ''
+  return String(intervencion.proxima_revision.kilometraje + Number(valor) - intervencion.kilometraje)
+}
+
 function ValorCorrecto({ dato, valor, alCambiar, error }) {
   const comun = { id: 'valor', etiqueta: 'Valor correcto', error }
   if (dato === 'kilometraje') return <CampoKilometraje {...comun} valor={valor} alCambiar={alCambiar} />
@@ -76,6 +83,7 @@ function ValorCorrecto({ dato, valor, alCambiar, error }) {
 function FormularioCorreccion({ intervencion, alCorregir, alCancelar }) {
   const [dato, setDato] = useState('kilometraje')
   const [valor, setValor] = useState('')
+  const [proximaEditada, setProximaEditada] = useState(null)
   const [motivo, setMotivo] = useState('')
   const [errores, setErrores] = useState({})
   const [errorGeneral, setErrorGeneral] = useState('')
@@ -83,11 +91,14 @@ function FormularioCorreccion({ intervencion, alCorregir, alCancelar }) {
 
   const original = DATOS[dato].aValor(intervencion[dato])
   const esCorreccion = Boolean(intervencion.corrige_a)
+  const conProxima = dato === 'kilometraje' && Boolean(intervencion.proxima_revision?.kilometraje)
+  const proxima = proximaEditada ?? proximaSugerida(intervencion, valor)
 
   function elegirDato(nuevo) {
     setDato(nuevo)
     // El tipo arranca en el registrado (es una lista); el resto, vacío para escribir el correcto.
     setValor(nuevo === 'tipo' ? intervencion.tipo : '')
+    setProximaEditada(null)
     setErrores({})
   }
 
@@ -97,6 +108,10 @@ function FormularioCorreccion({ intervencion, alCorregir, alCancelar }) {
     const faltantes = {}
     if (dato !== 'descripcion' && !valor.trim()) faltantes.valor = 'Completá este campo.'
     else if (valor.trim() === String(original).trim()) faltantes.valor = 'Es igual al valor registrado.'
+    if (conProxima && !proxima) faltantes.proxima = 'Completá este campo.'
+    else if (conProxima && valor && Number(proxima) <= Number(valor)) {
+      faltantes.proxima = 'Tiene que ser mayor al kilometraje del servicio.'
+    }
     if (!motivo.trim()) faltantes.motivo = 'Completá este campo.'
     if (Object.keys(faltantes).length > 0) {
       setErrores(faltantes)
@@ -107,12 +122,18 @@ function FormularioCorreccion({ intervencion, alCorregir, alCancelar }) {
     setEnviando(true)
     try {
       const datos = { ...datosDelRegistro(intervencion), [dato]: corregido, motivo }
+      if (conProxima) datos.proxima_revision = { ...datos.proxima_revision, kilometraje: Number(proxima) }
       alCorregir(await corregirIntervencion(intervencion.id, datos))
     } catch (error) {
       const campos = error.campos ?? {}
-      const enPanel = { valor: campos[dato], motivo: campos.motivo }
+      const enPanel = {
+        valor: campos[dato],
+        proxima: conProxima ? campos.proxima_revision ?? campos['proxima_revision.kilometraje'] : undefined,
+        motivo: campos.motivo,
+      }
       setErrores(enPanel)
-      if (!enPanel.valor && !enPanel.motivo) setErrorGeneral(error.message)
+      // Un error de un dato que no está en el panel se muestra arriba con su mensaje, no con el genérico.
+      if (!Object.values(enPanel).some(Boolean)) setErrorGeneral(Object.values(campos)[0] ?? error.message)
       setEnviando(false)
     }
   }
@@ -178,6 +199,31 @@ function FormularioCorreccion({ intervencion, alCorregir, alCancelar }) {
           error={errores.valor}
         />
       </div>
+
+      {conProxima && (
+        <div className="correccion-valores">
+          <div className="campo">
+            <div className="campo-etiqueta">
+              <span id="proxima-registrada-etiqueta" className="correccion-etiqueta-campo">
+                Próxima revisión registrada
+              </span>
+            </div>
+            <p className="correccion-registrado" aria-labelledby="proxima-registrada-etiqueta">
+              {formatearMiles(intervencion.proxima_revision.kilometraje)} km
+            </p>
+          </div>
+          <CampoKilometraje
+            id="proxima"
+            etiqueta="Próxima revisión correcta"
+            valor={proxima}
+            alCambiar={(nuevo) => {
+              setProximaEditada(nuevo)
+              setErrores((anteriores) => ({ ...anteriores, proxima: undefined }))
+            }}
+            error={errores.proxima}
+          />
+        </div>
+      )}
 
       <Campo
         id="motivo"
